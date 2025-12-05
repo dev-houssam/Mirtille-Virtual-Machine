@@ -6,6 +6,11 @@
 #include "me_serializer.h"
 
 
+typedef struct {
+
+} ME_Backup;
+
+
 // Compressing Algorithms 
 
 // Etc...

@@ -1,4 +1,3 @@
-
 #include "me_engine.h"
 #include "file.h"
 #include "sys.h"
@@ -16,13 +15,14 @@ void me_create_MirtilleEngine(Mirtille_Engine * me, System *paramSys, const char
 void me_run(Mirtille_Engine * me) {
 	while (!me->sys->input.quit) {
 		me_processInput(me);
-		me->vm.hostFrame();
+		me_hostFrame(me->vm);
 	}
 }
 
+// void me_destroy_System(ME_System * me_system);
 void me_destroy_MirtilleEngine(Mirtille_Engine * me){
 	me_finish(me);
-	me->sys->destroy();
+	me_destroy_System(me->sys);
 }
 
 

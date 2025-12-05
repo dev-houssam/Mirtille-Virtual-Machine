@@ -8,45 +8,50 @@
 #ifndef __ME_MIRTILLE_VIRTUALMACHINE_H__
 #define __ME_MIRTILLE_VIRTUALMACHINE_H__
 
+typedef int16_t me_RegisterOnInt16_t;
+
 
 typedef struct {
 	typedef void (Mirtille_VirtualMachine *OpcodeStub)();
 	static const OpcodeStub opcodeTable[];
 
-	static const uint16_t frequenceTable[];
+	//Composant critique : AI : on simule aussi un composant d'intelligence artificielle
+	ME_Video   * me_video;
+	ME_System  * me_system;
+	ME_Sound   * me_sound; 
+	ME_AI 	   * me_ai;
+	ME_Network * me_network;
+	ME_Memory  * me_memory;
 
-	Video *video;
-	System *sys;
-
-	int16_t vmVariables[VM_NUM_VARIABLES];
-
+	// Stocke les valeurs de variables ===> on va le transformer en Banque de registers
+	me_RegisterOnInt16_t me_vmVariables[VM_NUM_VARIABLES];
 	Ptr _scriptPtr;
 	uint8_t _stackPtr;
 
-	void me_init(Mirtille_VirtualMachine *me, Video *vid, System *stub);
-	void me_configuration_init(Mirtille_VirtualMachine * me);
-	
-	void op_mov();
-	void op_add();
-	void op_call();
-	void op_ret();
-	void op_jmp();
-	void op_jnz();
-	void op_selectVideoPage();
-	void op_fillVideoPage();
-	void op_copyVideoPage();
-	void op_blitFramebuffer();	
-	void op_drawString();
-	void op_sub();
-	void op_and();
-	void op_or();
-	void op_shl();
-	void op_shr();
-	void op_updateMemList();
-	void inp_handleSpecialKeys();
-
 } Mirtille_VirtualMachine;
 
+
+void me_init(Mirtille_VirtualMachine *me, ME_Video *vid, ME_System *stub);
+void me_configuration_init(Mirtille_VirtualMachine * me);
+void me_op_mov(Mirtille_VirtualMachine *me);
+void me_op_add(Mirtille_VirtualMachine *me);
+void me_op_call(Mirtille_VirtualMachine *me);
+void me_op_ret(Mirtille_VirtualMachine *me);
+void me_op_jmp(Mirtille_VirtualMachine *me);
+void me_op_jnz(Mirtille_VirtualMachine *me);
+void me_op_selectVideoPage(Mirtille_VirtualMachine *me);
+void me_op_fillVideoPage(Mirtille_VirtualMachine *me);
+void me_op_copyVideoPage(Mirtille_VirtualMachine *me);
+void me_op_blitFramebuffer(Mirtille_VirtualMachine *me);	
+void me_op_drawString(Mirtille_VirtualMachine *me);
+void me_op_sub(Mirtille_VirtualMachine *me);
+void me_op_and(Mirtille_VirtualMachine *me);
+void me_op_or(Mirtille_VirtualMachine *me);
+void me_op_shl(Mirtille_VirtualMachine *me);
+void me_op_shr(Mirtille_VirtualMachine *me);
+void me_op_updateMemList(Mirtille_VirtualMachine *me);
+void me_inp_handleSpecialKeys(Mirtille_VirtualMachine *me);
+void me_hostFrame(Mirtille_VirtualMachine *me);
 
 enum ME_JMP_CONDITION { 
     ME_JZ=0, ME_JNZ=1, ME_JG=2, ME_JGE=3, ME_JL=4, ME_JLE=5
@@ -54,4 +59,3 @@ enum ME_JMP_CONDITION {
 
 
 #endif
-

@@ -296,3 +296,7 @@ void me_saveOrLoad(Mirtille_VirtualMachine * me, Serializer &ser) {
 	};
 	ser.saveOrLoadEntries(entries);
 }
+
+void me_hostFrame(Mirtille_VirtualMachine *me){
+	// hostFrame
+}
