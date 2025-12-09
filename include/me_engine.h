@@ -13,10 +13,11 @@ typedef struct {
 	};
 
 	System *sys;
-	Mirtille_VirtualMachine vm;
 	Video video;
-	const char *_dataDir, *_saveDir;
-	uint8_t _stateSlot;	
+	Mirtille_VirtualMachine vm;
+	const char * _dataDir, 
+	const char * _saveDir;
+	uint8_t 	 _stateSlot;	
 } Mirtille_Engine;
 
 me_create_MirtilleEngine(Mirtille_Engine * me, System *stub, const char *dataDir, const char *saveDir);

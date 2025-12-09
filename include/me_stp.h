@@ -11,7 +11,7 @@
 
 typedef uint8_t mac[6];
 
-typedef struct bpdu{
+typedef struct bpdu {
     sommet id_root;
     uint64_t stp_root;
     sommet id_envoie;
