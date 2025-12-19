@@ -3,7 +3,6 @@
 
 typedef struct
 {
-	
 
 } ME_System;
 
@@ -15,3 +14,4 @@ void me_configuration_init_system(ME_System * me_system);
 void me_destroy_System(ME_System * me_system);
 
 #endif
+

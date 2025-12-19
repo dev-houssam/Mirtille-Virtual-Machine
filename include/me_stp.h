@@ -6,8 +6,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "graphe.h"
-#include "network.h"
+#include "me_graph.h"
+#include "me_network.h"
 
 typedef uint8_t mac[6];
 
@@ -18,4 +18,5 @@ typedef struct bpdu {
     int cout;
 } bpdu;
 
-int stp(network *net);
+int stp(me_network *net);
+

@@ -8,12 +8,26 @@
 #ifndef __ME_MIRTILLE_VIRTUALMACHINE_H__
 #define __ME_MIRTILLE_VIRTUALMACHINE_H__
 
-typedef int16_t me_RegisterOnInt16_t;
+#include <stdint.h>
+#include "me_video.h"
+#include "me_system.h"
+#include "me_sound.h"
+#include "me_ai.h"
+#include "me_network.h"
+#include "me_memory.h"
 
+#define VM_NUM_VARIABLES 100
+
+typedef uint16_t me_RegisterOnInt16_t;
+
+typedef struct{
+
+} OpcodeStub;
 
 typedef struct {
-	typedef void (Mirtille_VirtualMachine *OpcodeStub)();
-	static const OpcodeStub opcodeTable[];
+	//Mirtille_VirtualMachine 
+	void (*OpcodeStub)();
+	OpcodeStub opcodeTable[100];
 
 	//Composant critique : AI : on simule aussi un composant d'intelligence artificielle
 	ME_Video   * me_video;
@@ -25,7 +39,6 @@ typedef struct {
 
 	// Stocke les valeurs de variables ===> on va le transformer en Banque de registers
 	me_RegisterOnInt16_t me_vmVariables[VM_NUM_VARIABLES];
-	Ptr _scriptPtr;
 	uint8_t _stackPtr;
 
 } Mirtille_VirtualMachine;
