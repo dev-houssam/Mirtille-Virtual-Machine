@@ -1,5 +1,5 @@
-#ifndef __ME_NETWORK_H__
-#define __ME_NETWORK_H__
+#ifndef __me_subNetwork_H__
+#define __me_subNetwork_H__
 
 
 #pragma once
@@ -27,12 +27,12 @@ typedef struct
 {
 	uint *port;
 
-} ME_Network_Port_t;
+} me_subNetwork_Port_t;
 
 
 
 typedef struct me_association {
-    ME_Network_Port_t num_port;
+    me_subNetwork_Port_t num_port;
     me_mac adr_mac;
 } me_association;
 
@@ -58,22 +58,27 @@ typedef struct me_machine {
     me_sommet id;
     me_sommet id_root;
     int cout;
-    ME_Network_Port_t port_root;
+    me_subNetwork_Port_t port_root;
     me_etat_port *etat_ports;
 } me_machine;
 
 
 
-typedef struct me_network {
+typedef struct me_subNetwork {
     me_graphe* g;
     me_machine* equipements;
     size_t nbEquipements;
-} me_network;
+} me_subNetwork; 
 
 
-me_network* me_creation_reseau();
-void deinit_reseau(me_network* reseau);
-void afficher(me_network* reseau);
+typedef struct {
+
+} ME_Network;
+
+
+me_subNetwork* me_creation_reseau();
+void deinit_reseau(me_subNetwork* reseau);
+void afficher(me_subNetwork* reseau);
 char *mac_to_string(const me_mac m);
 char *mac_to_string_hexa(const me_mac m);
 void me_string_to_mac(const char *adr, ME_MAC_Network_Address_t * mac);
@@ -82,10 +87,10 @@ char * me_ip_to_string(ME_IP_Network_Address_t ip);
 
 size_t me_degre(me_graphe const *g, me_sommet s);
 
-bool me_existe_machine(me_network* net, const me_mac adr);
+bool me_existe_machine(me_subNetwork* net, const me_mac adr);
 
 int me_existe_asso(me_machine* sw, me_mac adr_mac);
-void me_ajout_asso(me_machine* sw, me_mac adr_mac, ME_Network_Port_t port);
+void me_ajout_asso(me_machine* sw, me_mac adr_mac, me_subNetwork_Port_t port);
 
 
 void me_affiche_table_commutation(me_machine* sw);

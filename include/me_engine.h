@@ -4,6 +4,7 @@
 //#include "intern.h"
 #include "me_vm.h"
 #include "me_video.h"
+#include "me_system.h"
 
 struct System;
 
@@ -25,6 +26,7 @@ me_destroy_MirtilleEngine(Mirtille_Engine * me);
 
 void me_run(Mirtille_Engine * me);
 void me_init_engine(Mirtille_Engine * me);
+void me_configuration_init_engine (Mirtille_Engine * me);
 void me_finish(Mirtille_Engine * me);
 void me_processInput(Mirtille_Engine * me);
 

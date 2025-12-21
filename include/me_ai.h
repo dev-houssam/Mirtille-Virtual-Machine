@@ -6,6 +6,6 @@ typedef struct {
 } ME_AI;
 
 
-void me_init(ME_AI * me_ai);
+void me_init_ai(ME_AI * me_ai);
 
 #endif

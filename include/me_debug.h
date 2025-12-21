@@ -8,16 +8,16 @@
 #ifndef __ME_DEBUG_H__
 #define __ME_DEBUG_H__
 
-enum me_debug_mode {
+typedef enum {
 	ME_DBG_NFM=0,
 	ME_DBG_VIDEO=1,
 	ME_DBG_INFO=2
-};
+} me_debug_mode;
 
 
 typedef struct 
 {
-	enum me_debug_mode mode;
+	me_debug_mode mode;
 	int level;
 	char * message_debug;
 } me_debug;

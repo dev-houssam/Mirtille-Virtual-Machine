@@ -9,12 +9,12 @@
 
 
 typedef struct {
-	static int64_t sCallbackCount;
+	int64_t sCallbackCount;
 	void *inputBuffer;
 	void *outputBuffer;
 	unsigned long framesPerBuffer;
-	PaStreamCallbackTimeInfo* timeInfo;
-	PaStreamCallbackFlags statusFlags;
+	/*PaStreamCallbackTimeInfo* timeInfo;
+	PaStreamCallbackFlags statusFlags;*/
 	void *userData;
 } ME_Sound;
 

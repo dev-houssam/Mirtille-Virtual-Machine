@@ -43,4 +43,8 @@ set(HEADERS
     include/me_utils.h 
     )
 
+find_package(portaudio)
+
 add_executable(MVM ${SRCS} ${HEADERS})
+
+# add_subdirectory("path to PortAudio location" "some binary directory" EXCLUDE_FROM_ALL)

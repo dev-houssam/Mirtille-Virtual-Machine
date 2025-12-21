@@ -1,9 +1,8 @@
-#include <ctime>
-#include "vm.h"
-#include "video.h"
-#include "sys.h"
+#include "../include/me_vm.h"
+#include "../include/me_video.h"
+#include "../include/me_system.h"
 
-Mirtille_VirtualMachine * me_init(Mirtille_VirtualMachine *me, Video *vid, System *stub){
+Mirtille_VirtualMachine * me_init(Mirtille_VirtualMachine *me, ME_Video *vid, ME_System *stub){
 	me->video = vid;
 	me->sys 	= stub;
 }

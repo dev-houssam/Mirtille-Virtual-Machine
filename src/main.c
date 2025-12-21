@@ -19,7 +19,7 @@ static const char *USAGE =
 
 
 
-int me_checkOptions(int argc, char const *argv[], char * me_dataPath, char * me_savePath) {
+int me_checkOptions(int argc, char const *argv[], const char * me_dataPath, const char * me_savePath) {
 	for (int i = 1; i < argc; ++i) {
 		int opt = false;
 		if (strlen(argv[i]) >= 2) {
@@ -61,7 +61,7 @@ main(int argc, char const *argv[])
 
 	
 	Mirtille_Engine * me = me_create_MirtilleEngine(NULL, NULL, me_dataPath, me_savePath);
-	me_configuration_engine(me);
+	me_configuration_init_engine(me);
 	me_run(me);
 
 

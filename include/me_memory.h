@@ -6,5 +6,6 @@ typedef struct {
 	
 } ME_Memory;
 
+void me_init_memory();
 
 #endif

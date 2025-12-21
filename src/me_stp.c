@@ -1,4 +1,4 @@
-#include "STP.h"
+#include "../include/me_stp.h"
 
 bpdu creerBPDU(machine sw);
 void receptionBPDU(machine *sw, bpdu bpdu, uint port_reception, int poids);

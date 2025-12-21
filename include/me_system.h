@@ -1,9 +1,12 @@
 #ifndef __ME_SYSTEM_H__
 #define __ME_SYSTEM_H__
 
+#include "me_video.h"
+
+
 typedef struct
 {
-
+	ME_VIDEO_STATE_T setVideoState;
 } ME_System;
 
 

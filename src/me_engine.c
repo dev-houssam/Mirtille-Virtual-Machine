@@ -1,6 +1,6 @@
-#include "me_engine.h"
-#include "file.h"
-#include "sys.h"
+#include "../include/me_engine.h"
+#include "../include/me_system.h"
+
 
 void me_create_MirtilleEngine(Mirtille_Engine * me, System *paramSys, const char *dataDir, const char *saveDir){
 	me->sys 			 = paramSys;
@@ -9,8 +9,8 @@ void me_create_MirtilleEngine(Mirtille_Engine * me, System *paramSys, const char
 	me->_dataDir 	 = dataDir; 
 	me->_saveDir 	 = saveDir; 
 	me->_stateSlot = 0;
-
 }
+
 
 void me_run(Mirtille_Engine * me) {
 	while (!me->sys->input.quit) {
@@ -26,11 +26,16 @@ void me_destroy_MirtilleEngine(Mirtille_Engine * me){
 }
 
 
-void me_init(Mirtille_Engine * me) {
+void me_configuration_init (Mirtille_Engine * me) {
 	//Init system
 	me->sys->init("Mirtille Virtual Machine");
 	me_configuration_init_video(me->video);
 	me->vm.init();
+
+}
+
+
+void me_configuration_engine (Mirtille_Engine * me) {
 
 }
 

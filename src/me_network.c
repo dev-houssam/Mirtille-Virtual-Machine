@@ -1,6 +1,6 @@
-#include "network.h"
-#include "graphe.h"
-#include "STP.h"
+#include "../include/me_network.h"
+#include "../include/me_graph.h"
+#include "../include/me_stp.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

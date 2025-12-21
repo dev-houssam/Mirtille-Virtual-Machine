@@ -5,6 +5,8 @@
     Date : 04/12/2025
 */
 
+#include "../include/me_heap.h"
+
 // Function to create a heap
 Mirtille_Heap *me_create_MirtilleHeap(int capacity)
 {

@@ -1,11 +1,11 @@
 #ifndef __ME_SOUND_PORTAUDIO_H__
 #define __ME_SOUND_PORTAUDIO_H__
 
-
+#include "me_sound.h"
 
 #define SAMPLE_RATE            (44100)
 
-typedef struct WireConfig_s
+typedef struct WireConfig_t
 {
     PaDeviceIndex inputDevice;
     PaDeviceIndex outputDevice;
