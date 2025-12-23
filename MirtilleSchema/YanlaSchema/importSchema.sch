@@ -25,7 +25,10 @@ VB.net: Imports CtrlChrs = Microsoft.VisualBasic.ControlChars
 
 c++: import math;
 
+
 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+Yanla Importation System (YISYS):
+--------------------
 
 Yanla : from <iostream> import namespace.subnamespace
 
@@ -42,5 +45,13 @@ Yanla : from <iostream> import namespace.subnamespace
 	import A
 	
 	from exported "./" import * 
+
+-- Importation par correspondance (importation brute-force : importation par reconnaissance):
+	export from "myvalue" to "mykey"
+	from key "mykey" import matching "myvalue"
+
+	--
+	export "myvalue" to *
+	from key * import matching "myvalue"
 
 
