@@ -15,7 +15,11 @@ Mirtille_Heap *me_create_MirtilleHeap(int capacity)
     heap->saturationCapacity = capacity;
     heap->nature = 0;
     heap->location = 0;
-    heap->agentSpace = (Mirtille_HeapAgent *)malloc(saturationCapacity * sizeof(Mirtille_HeapAgent));
+    heap->agentSpace = (Mirtille_HeapAgent *)malloc(heap->saturationCapacity * sizeof(Mirtille_HeapAgent));
+    if (heap->agentSpace == NULL)
+    {
+        return NULL;
+    }
     return heap;
 }
 
@@ -33,7 +37,7 @@ void me_heapify(Mirtille_Heap *heap, int i)
     int largest = i;
     int left = 2 * i + 1;
     int right = 2 * i + 2;
-
+    /*
     if (left < heap->size && heap->agentSpace[left] > heap->agentSpace[largest])
         largest = left;
 
@@ -45,6 +49,7 @@ void me_heapify(Mirtille_Heap *heap, int i)
         me_swap(&heap->agentSpace[i], &heap->agentSpace[largest]);
         me_heapify(heap, largest);
     }
+    */
 }
 
 // Function to build a max heap from an existing array
@@ -58,23 +63,25 @@ void me_buildHeap(Mirtille_Heap *heap)
 // Function to increase the value at a given index
 void me_increaseKey(Mirtille_Heap *heap, int index, Mirtille_HeapAgent newValue)
 {
+    /*
     if (index >= heap->size || heap->agentSpace[index] >= newValue)
     {
         printf("Invalid index or new value is not greater\n");
         return;
-    }
+    }*/
 
-    heap->agentSpace[index] = newValue;
-    while (index != 0 && heap->agentSpace[(index - 1) / 2] < heap->agentSpace[index])
+    //heap->agentSpace[index] = newValue;
+    /*while (index != 0 && heap->agentSpace[(index - 1) / 2] < heap->agentSpace[index])
     {
         me_swap(&heap->agentSpace[index], &heap->agentSpace[(index - 1) / 2]);
         index = (index - 1) / 2;
-    }
+    }*/
 }
 
 // Function to insert a new value into the heap
 void me_insertHeap(Mirtille_Heap *heap, Mirtille_HeapAgent value)
 {
+    /*
     if (heap->size == heap->saturationCapacity)
     {
         printf("Heap overflow\n");
@@ -84,19 +91,19 @@ void me_insertHeap(Mirtille_Heap *heap, Mirtille_HeapAgent value)
     heap->size++;
     int i = heap->size - 1;
     heap->agentSpace[i] = value;
-
+    */
     // Fix the heap property if it is violated
-    while (i != 0 && heap->agentSpace[(i - 1) / 2] < heap->agentSpace[i])
+    /*while (i != 0 && heap->agentSpace[(i - 1) / 2] < heap->agentSpace[i])
     {
         me_swap(&heap->agentSpace[i], &heap->agentSpace[(i - 1) / 2]);
         i = (i - 1) / 2;
-    }
+    }*/
 }
 
 // Function to extract the root (maximum element)
 int me_extractMax(Mirtille_Heap *heap)
 {
-    if (heap->size <= 0)
+    /*if (heap->size <= 0)
         return INT_MIN;
     if (heap->size == 1)
     {
@@ -108,15 +115,19 @@ int me_extractMax(Mirtille_Heap *heap)
     heap->agentSpace[0] = heap->agentSpace[heap->size - 1];
     heap->size--;
     me_heapify(heap, 0);
-
+    
     return root;
+    */
+    return 0;
 }
 
 // Function to print the heap
 void me_printHeap(Mirtille_Heap *heap)
 {
-    for (int i = 0; i < heap->size; ++i)
-        printf("%d ", heap->agentSpace[i]);
+    for (int i = 0; i < heap->size; ++i){
+        //printf("%d ",  (heap->agentSpace[i]));
+        printf("agent----\n");
+    }
     printf("\n");
 }
 

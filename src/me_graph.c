@@ -2,10 +2,10 @@
 
 #define INITIAL_CAPACITY 8
 
-void normaliser_arete(arete *arete);
-void swap_sommets(arete *a);
+void normaliser_arete(me_arete *arete);
+void swap_sommets(me_arete *a);
 
-void init_graphe(graphe *g)
+void init_graphe(me_graphe *g)
 {
     // initialise les champs internes du graphe g
     // - allocation d'un tableau d'arêtes de capacité initiale 8
@@ -14,7 +14,7 @@ void init_graphe(graphe *g)
     g->ordre = 0;
     g->nb_aretes = 0;
     g->aretes_capacite = INITIAL_CAPACITY;
-    g->aretes = malloc(g->aretes_capacite * sizeof(arete));
+    g->aretes = malloc(g->aretes_capacite * sizeof(me_arete));
 
     if(g->aretes == NULL){
       fprintf(stderr, "Erreur d'allocation mémoire\n"); //Sortie erreur
@@ -22,7 +22,7 @@ void init_graphe(graphe *g)
     }
 }
 
-void deinit_graphe(graphe *g)
+void deinit_graphe(me_graphe *g)
 {
     // libère la mémoire qui avait été allouée dans la fonction init_graphe
     // réinitialise les champs internes du graphe g
@@ -33,22 +33,22 @@ void deinit_graphe(graphe *g)
     g->aretes = NULL;
 }
 
-size_t ordre(graphe const *g)
+size_t ordre(me_graphe const *g)
 {
     return g->ordre;
 }
 
-size_t nb_aretes(graphe const *g)
+size_t nb_aretes(me_graphe const *g)
 {
     return g->nb_aretes;
 }
 
-void ajouter_sommet(graphe *g)
+void ajouter_sommet(me_graphe *g)
 {
   g->ordre += 1;
 }
 
-size_t index_sommet(graphe const *g, sommet s)
+size_t index_sommet(me_graphe const *g, me_sommet s)
 {
     // retourne l'index du sommet s dans le graphe g
     // la valeur UNKNOWN_INDEX si le sommet n'existe pas dans g)
@@ -65,27 +65,27 @@ size_t index_sommet(graphe const *g, sommet s)
 // une fonction locale "static arete swap_sommets(arete a)" pourra être utile
 // cette fonction retourne une nouvelle arête dont les sommets sont les même que l'arête reçue mais inversés
 
-void swap_sommets(arete *a){
-  sommet temp = a->s2;
+void swap_sommets(me_arete *a){
+  me_sommet temp = a->s2;
   a->s2 = a->s1;
   a->s1 = temp;
 }
 
-void normaliser_arete(arete *arete){
+void normaliser_arete(me_arete *arete){
   if(arete->s2 < arete->s1){
     swap_sommets(arete);
   }
 }
 
 
-bool existe_arete(graphe const *g, arete a)
+bool existe_arete(me_graphe const *g, me_arete a)
 {
     // retourne true si l'arête a est contenue dans le graphe g, false sinon
     // /!\ l'arête (s1,s2) et l'arête (s2,s1) sont considérées équivalentes
 
     normaliser_arete(&a);
     for(size_t i=0; i<g->nb_aretes; i++){
-      arete b = g->aretes[i];
+      me_arete b = g->aretes[i];
       normaliser_arete(&b);
       if((a.s1 == b.s1 && a.s2 == b.s2)){
         return true;
@@ -95,7 +95,7 @@ bool existe_arete(graphe const *g, arete a)
     return false;
 }
 
-bool ajouter_arete(graphe *g, arete a)
+bool ajouter_arete(me_graphe *g, me_arete a)
 {
     normaliser_arete(&a);
 
@@ -114,12 +114,12 @@ bool ajouter_arete(graphe *g, arete a)
     }
 
     if(g->nb_aretes == g->aretes_capacite){
-      arete* newTab = malloc(sizeof(arete) * g->aretes_capacite * 2);
+      me_arete* newTab = malloc(sizeof(me_arete) * g->aretes_capacite * 2);
       if(newTab == NULL){
         return false;
       }
       g->aretes_capacite *= 2;
-      memcpy(newTab, g->aretes, sizeof(arete) * g->nb_aretes);  //OU REALLOC : malloc + copie + free    g->aretes = realloc(g->aretes, g->aretes_capacite*2); PUIS VERIFIER g->aretes != NULL
+      memcpy(newTab, g->aretes, sizeof(me_arete) * g->nb_aretes);  //OU REALLOC : malloc + copie + free    g->aretes = realloc(g->aretes, g->aretes_capacite*2); PUIS VERIFIER g->aretes != NULL
       free(g->aretes);
       g->aretes = newTab;
       g->aretes[g->nb_aretes] = a;
@@ -132,7 +132,7 @@ bool ajouter_arete(graphe *g, arete a)
     return true;
 }
 
-size_t index_arete(graphe const *g, arete a)
+size_t index_arete(me_graphe const *g, me_arete a)
 {
     // retourne l'index de l'arête au sein du tableau d'arêtes de g si l'arête a existe dans g,
     // la valeur UNKNOWN_INDEX sinon
@@ -140,7 +140,7 @@ size_t index_arete(graphe const *g, arete a)
     normaliser_arete(&a);
     if(existe_arete(g, a)){
       for(size_t i=0; i<g->nb_aretes; i++){
-        arete b = g->aretes[i];
+        me_arete b = g->aretes[i];
         normaliser_arete(&b);
         if(a.s1 == b.s1 && a.s2 == b.s2){
           return i;
@@ -151,15 +151,15 @@ size_t index_arete(graphe const *g, arete a)
     return UNKNOWN_INDEX;
 }
 
-uint poids_arete(graphe const *g, sommet s1, sommet s2){
-  arete a = {s1, s2};
+uint poids_arete(me_graphe const *g, me_sommet s1, me_sommet s2){
+  me_arete a = {s1, s2};
   size_t index = index_arete(g, a);
 
   return g->aretes[index].poids;
 
 }
 
-size_t sommets_adjacents(graphe const *g, sommet s, sommet sa[])
+size_t sommets_adjacents(me_graphe const *g, me_sommet s, me_sommet sa[])
 {
     // remplit le tableau sa avec les sommets adjacents de s dans g
     // et retourne le nombre de sommets ainsi stockés
@@ -168,7 +168,7 @@ size_t sommets_adjacents(graphe const *g, sommet s, sommet sa[])
 
     size_t degre = 0;
     for(size_t i = 0; i<g->nb_aretes; i++){
-      arete a = g->aretes[i];
+      me_arete a = g->aretes[i];
       normaliser_arete(&a);
       if(a.s1 == s){
         sa[degre] = a.s2;

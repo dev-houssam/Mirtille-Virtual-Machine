@@ -4,9 +4,13 @@
 #include "me_video.h"
 
 
+typedef enum {
+	OK
+} ME_VIDEO_SYSTEM_STATE_T;
+
 typedef struct
 {
-	ME_VIDEO_STATE_T setVideoState;
+	ME_VIDEO_SYSTEM_STATE_T setVideoState;
 } ME_System;
 
 

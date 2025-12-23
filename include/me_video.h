@@ -10,11 +10,14 @@
 #ifndef __ME_VIDEO_H__
 #define __ME_VIDEO_H__
 
-#include "me_system.h"
+//#include "me_system.h"
 #include "me_serializer.h"
 #include <stdint.h>
 
 struct ME_Video;
+
+struct ME_System;
+
 
 typedef enum {
 	ME_VIDEO_STATE_INVALID = -1,
@@ -30,7 +33,7 @@ typedef struct { } Designer;
 typedef struct {
 	void (*callback)(struct ME_Video* video, int16_t x1, int16_t x2, uint8_t col);
 
-	ME_System *sys;
+	struct ME_System *sys;
 
 	uint8_t *bufferFront1;
 	uint8_t *bufferSwap2;
@@ -42,7 +45,7 @@ typedef struct {
 } ME_Video;
 
 // Création et Liaison système
-void me_init_video(ME_Video* video, ME_System *stub);
+void me_init_video(ME_Video* video, struct ME_System *stub);
 // Configuration et ajustement
 void me_configuration_init_video(ME_Video* video);
 

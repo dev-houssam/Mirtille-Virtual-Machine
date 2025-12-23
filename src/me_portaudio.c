@@ -1,7 +1,9 @@
 #include "../include/me_portaudio.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 
 
-static int64_t sCallbackCount = 0;
 // This callback will never be called again after a certain period of time
 
 static int me_callBackListening(ME_Sound * me_sound,
@@ -19,16 +21,16 @@ static int me_callBackListening(ME_Sound * me_sound,
     sCallbackCount++;
     return paContinue;
 }
-
+/*
 int me_record(ME_Sound * me_sound) {
     PaStream* stream = NULL;
     PaStreamParameters inputParameters;
     PaError err = 0;
     int loopCount = 0;
-    int64_t previousCallbackCount = sCallbackCount;
+    uint64_t previousCallbackCount = sCallbackCount;
     Pa_Initialize ();
 
-    inputParameters.device = Pa_GetDefaultInputDevice(); /* default input device */
+    inputParameters.device = Pa_GetDefaultInputDevice(); // default input device 
     printf("Recording using device #%d\n", inputParameters.device);
     inputParameters.channelCount = 1;
     inputParameters.sampleFormat = paInt16;
@@ -38,12 +40,12 @@ int me_record(ME_Sound * me_sound) {
     err = Pa_OpenStream(
               &stream,
               &inputParameters,
-              NULL,                  /* &outputParameters, */
+              NULL,                  // &outputParameters,
               44100,
               512,
-              paClipOff,      /* we won't output out of range samples so don't bother clipping them */
-              listening, /* callback */
-              NULL ); /* no callback userData */
+              paClipOff,      // we won't output out of range samples so don't bother clipping them
+              me_callBackListening, // callback
+              NULL ); // no callback userData
     if( err != paNoError ) {
         printf("Pa_OpenDefaultStream returned %d!\n", err);
         goto error2;
@@ -77,13 +79,13 @@ error2:
     return 0;
 }
 
-
+*/
 
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
-
-static int wireCallback( ME_Sound * me_sound, const void *inputBuffer, void *outputBuffer,
+/*
+static int wireCallback(const void *inputBuffer, void *outputBuffer,
                          unsigned long framesPerBuffer,
                          const PaStreamCallbackTimeInfo* timeInfo,
                          PaStreamCallbackFlags statusFlags,
@@ -99,10 +101,10 @@ static int wireCallback( ME_Sound * me_sound, const void *inputBuffer, void *out
     unsigned int i;
     int inChannel, outChannel;
 
-    /* This may get called with NULL inputBuffer during initial setup. */
+    // This may get called with NULL inputBuffer during initial setup. 
     if( inputBuffer == NULL) return 0;
 
-    /* Count flags */
+    // Count flags 
     if( (statusFlags & paInputUnderflow) != 0 ) config->numInputUnderflows += 1;
     if( (statusFlags & paInputOverflow) != 0 ) config->numInputOverflows += 1;
     if( (statusFlags & paOutputUnderflow) != 0 ) config->numOutputUnderflows += 1;
@@ -148,7 +150,7 @@ static int wireCallback( ME_Sound * me_sound, const void *inputBuffer, void *out
         else outDone = 1;
     }
     return 0;
-}
+}*/
 
 /*******************************************************************/
 int me_inoutRecording(ME_Sound * me_sound)
@@ -262,6 +264,7 @@ error:
     return -1;
 }
 
+/*
 static PaError TestConfiguration( WireConfig_t *config )
 {
     int c;
@@ -294,14 +297,17 @@ static PaError TestConfiguration( WireConfig_t *config )
     config->numPrimingOutputs = 0;
     config->numCallbacks = 0;
 
+    // frames per buffer //
+    // we won't output out of range samples so don't bother clipping them 
+    // me_callBackListening
     err = Pa_OpenStream(
               &stream,
               &inputParameters,
               &outputParameters,
               SAMPLE_RATE,
-              config->framesPerCallback, /* frames per buffer */
-              paClipOff, /* we won't output out of range samples so don't bother clipping them */
-              wireCallback,
+              config->framesPerCallback,
+              paClipOff, 
+              &wireCallback,
               config );
     if( err != paNoError ) goto error;
 
@@ -328,4 +334,4 @@ static PaError TestConfiguration( WireConfig_t *config )
 
 error:
     return err;
-}
+}*/

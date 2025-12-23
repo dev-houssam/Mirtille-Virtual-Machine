@@ -1,9 +1,11 @@
 #include "../include/me_stp.h"
+#include "../include/me_error.h"
 
-bpdu creerBPDU(machine sw);
-void receptionBPDU(machine *sw, bpdu bpdu, uint port_reception, int poids);
 
-bpdu me_creerBPDU(machine sw) {
+bpdu creerBPDU(me_machine sw);
+void receptionBPDU(me_machine *sw, bpdu bpdu, uint port_reception, int poids);
+
+bpdu me_creerBPDU(me_machine sw) {
     bpdu b;
     b.id_root = sw.id_root;
     b.stp_root = sw.stp_root;
@@ -28,11 +30,12 @@ void me_receptionBPDU(me_machine *sw, bpdu bpdu, uint port_reception, int poids)
 
         sw->etat_ports[port_reception].etat = 0;
         sw->cout = newCost;
-        sw->port_root = port_reception;
+        *(sw->port_root.port) = port_reception;
     }
 }
 
-int me_stp(me_network *net) {
+MIRTILLE_MACHINE_ERROR_CODE 
+me_stp(me_subNetwork *net) {
     // init des id root de chaque
     for(size_t i=0; i<net->nbEquipements; i++){
       if (net->equipements[i].type==2){
@@ -45,24 +48,24 @@ int me_stp(me_network *net) {
     while (continuer) {
       // echange de BPDU
       for(size_t i = 0; i< net->nbEquipements; i++){
-        machine envoyeur = net->equipements[i];
+        me_machine envoyeur = net->equipements[i];
         if (envoyeur.type==2){
           // creation du bpdu du switch
           bpdu d = creerBPDU(envoyeur);
 
           //recupere sommets adj du switch
-          sommet* sommet_adj = malloc(net->nbEquipements * sizeof(sommet));
+          me_sommet* sommet_adj = malloc(net->nbEquipements * sizeof(me_sommet));
 
           if(sommet_adj == NULL){
             printf("Erreur d'allocation memoire\n");
             return EXIT_FAILURE;
           }
 
-          size_t nb_adj = sommets_adjacents(net->g, i, sommet_adj);
+          size_t nb_adj = me_sommets_adjacents(net->g, i, sommet_adj);
 
           //parcours des voisins
           for(size_t j=0; j< nb_adj; j++){
-            machine voisin = net->equipements[sommet_adj[j]];
+            me_machine voisin = net->equipements[sommet_adj[j]];
             if(voisin.type == 2){
               //recupere le port de reception du voisin
               uint port;
@@ -73,7 +76,7 @@ int me_stp(me_network *net) {
                 }
               }
 
-              uint poids = poids_arete(net->g, i, sommet_adj[j]);
+              uint poids = me_poids_arete(net->g, i, sommet_adj[j]);
               receptionBPDU(&net->equipements[sommet_adj[j]], d, port, poids);
             }
           }
@@ -106,11 +109,11 @@ int me_stp(me_network *net) {
 
     // changements etat des ports
     for (size_t i=0; i<net->nbEquipements; i++){
-      machine sw = net->equipements[i];
+      me_machine sw = net->equipements[i];
       if (sw.type==2){
         for (size_t j=0; j<sw.nb_ports; j++) {
           uint port = j;
-          if(sw.port_root == port){
+          if(*(sw.port_root.port) == port){
             continue;
           }
           // si c'est pas un port root, on veut changer son etat
@@ -119,7 +122,7 @@ int me_stp(me_network *net) {
           // on recupere l'equipement en face
           int id_equip_connec = sw.etat_ports[port].id_connecte;
 
-          machine switchFace = net->equipements[id_equip_connec];
+          me_machine switchFace = net->equipements[id_equip_connec];
 
           if(switchFace.type != 2){         //Si c'est une station en face, on met en désigné
             if(switchFace.type == 1){
@@ -131,7 +134,7 @@ int me_stp(me_network *net) {
           // si c'est un switch on regarde le port qui le relie et on definie
           for(size_t k =0; k<switchFace.nb_ports; k++){
             if(switchFace.etat_ports[k].id_connecte == i){
-              if(switchFace.port_root == k){
+              if(*(switchFace.port_root.port) == k){
                 sw.etat_ports[port].etat = 1;   // si c'est un port root on le met en designe
               }
               else{

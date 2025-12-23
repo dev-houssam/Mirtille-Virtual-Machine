@@ -20,7 +20,7 @@ typedef struct me_trame_ethernet {
     uint8_t fcs[4];
 } me_trame_ethernet;
 
-me_trame_ethernet init_trame(me_mac mac_src, me_mac mac_dest, uint16_t type, const char* message);
+me_trame_ethernet me_init_trame(me_mac mac_src, me_mac mac_dest, uint16_t type, const char* message);
 void me_deinit_trame(me_trame_ethernet* t);
 
 void me_afficher_trame(me_trame_ethernet* t);

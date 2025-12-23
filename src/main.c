@@ -49,7 +49,7 @@ static bool me_parseOption(const char *arg, const char *longCmd, const char **op
 }
 
 
-enum MIRTILLE_MACHINE_ERROR_CODE 
+MIRTILLE_MACHINE_ERROR_CODE 
 main(int argc, char const *argv[])
 {
 	const char *me_dataPath = ".";

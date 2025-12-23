@@ -1,9 +1,27 @@
 #ifndef __ME_SOUND_PORTAUDIO_H__
 #define __ME_SOUND_PORTAUDIO_H__
 
-#include "me_sound.h"
+//#include "me_sound.h"
+#include <math.h>
+#include <portaudio.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+
 
 #define SAMPLE_RATE            (44100)
+
+
+typedef struct {
+    uint64_t sCallbackCount;
+    void *inputBuffer;
+    void *outputBuffer;
+    unsigned long framesPerBuffer;
+    PaStreamCallbackTimeInfo* timeInfo;
+    PaStreamCallbackFlags statusFlags;
+    void *userData;
+} ME_Sound;
+
 
 typedef struct WireConfig_t
 {
@@ -68,10 +86,15 @@ static int me_wireCallback(ME_Sound * me_sound, const void *inputBuffer, void *o
 
 int me_inoutRecording(ME_Sound * me_sound);
 
-static int64_t sCallbackCount = 0;
+static uint64_t sCallbackCount = 0;
 // This callback will never be called again after a certain period of time
 
-static int me_callBackListening(ME_Sound * me_sound);
+static int me_callBackListening(ME_Sound * me_sound,
+                      const void *inputBuffer, void *outputBuffer,
+                      unsigned long framesPerBuffer,
+                      const PaStreamCallbackTimeInfo* timeInfo,
+                      PaStreamCallbackFlags statusFlags,
+                      void *userData );
 
 int me_record(ME_Sound * me_sound);
 

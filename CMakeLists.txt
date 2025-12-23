@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.28.3)
+cmake_minimum_required(VERSION 3.28.3 FATAL_ERROR)
 
-project(MirtilleVirtualMachine)
+project(MirtilleVirtualMachine VERSION 1.0 LANGUAGES C)
 
 # Crée des variables avec les fichiers à compiler
 set(SRCS
@@ -43,8 +43,35 @@ set(HEADERS
     include/me_utils.h 
     )
 
-find_package(portaudio)
+# find_package(portaudio)
 
 add_executable(MVM ${SRCS} ${HEADERS})
+
+# ouou
+# set(glfw3_DIR /usr/local/lib/cmake/glfw3)
+# set(glm_DIR /usr/local/lib/cmake/glm)
+
+find_package(OpenGL REQUIRED)
+#find_package(GLUT REQUIRED)
+#find_package(GLEW REQUIRED)
+
+# find_package(glfw3 REQUIRED)
+# find_package(glm REQUIRED)
+# ouou
+
+# find_package(OpenGL REQUIRED)
+
+
+
+target_link_libraries(MVM PUBLIC GL GLUT portaudio)
+
+
+# target_link_libraries(app PUBLIC stb glfw3 GL X11)
+
+# add_dependencies(MirtilleVirtualMachine OpenGL)
+
+include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
+
+# target_link_libraries(MirtilleVirtualMachine ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} )
 
 # add_subdirectory("path to PortAudio location" "some binary directory" EXCLUDE_FROM_ALL)

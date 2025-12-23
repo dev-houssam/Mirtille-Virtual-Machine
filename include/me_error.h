@@ -9,7 +9,7 @@
 #define __ME_ERROR_MIRTILLE_MACHINE_ERROR_CODE__H__
 
 
-enum MIRTILLE_MACHINE_ERROR_CODE {
+typedef enum {
 	ME_EXIT_FAILURE					= -1, 
 	ME_EXIT_SUCCESS					= 0, 
 	ME_EXIT_ABNORMAL_TERMINATION	= 1,
@@ -26,9 +26,9 @@ enum MIRTILLE_MACHINE_ERROR_CODE {
 	ME_EXIT_PROGRAM_ABORTED_SIGXFSZ = 153, 
 	ME_EXIT_ABORTED_CPU 			= 158, 
 	ME_EXIT_PROGRAM_ABORTED 	 	= 159
-};
+} MIRTILLE_MACHINE_ERROR_CODE;
 
-const char * me_getStringErrorCode(enum MIRTILLE_MACHINE_ERROR_CODE code_mmec){
+const char * me_getStringErrorCode(MIRTILLE_MACHINE_ERROR_CODE code_mmec){
 	switch(code_mmec){
 		case ME_EXIT_FAILURE :
 			return "ME_EXIT_FAILURE";

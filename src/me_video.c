@@ -10,6 +10,8 @@
 #include "../include/me_system.h"
 #include "../include/me_debug.h"
 #include <GL/glut.h>
+#include <stdio.h>
+#include <string.h>
 
 const char * compileTest(){return "gcc filename.c -lGL -lGLU -lglut";}
 
@@ -34,7 +36,7 @@ void display() {
     glFlush();
 }
 
-void me_init_video(ME_Video * video, ME_System * subStub){
+void me_init_video(ME_Video * video, struct ME_System * subStub){
 	video = (ME_Video *) malloc(sizeof(ME_Video));
 	if(NULL == video){
 		perror("Cannot allocate video memory : me_init_video(ME_Video * video, ME_System * subStub)");
@@ -47,22 +49,25 @@ void me_init_video(ME_Video * video, ME_System * subStub){
 		fprintf(stdout, "%s\n", "Configuration video system");
 	}
 	// We use system configuration to make setting for video
-	subStub->setVideoState = ME_VIDEO_STATE_OK; // 1 for OK
+	//subStub.setVideoState = ME_VIDEO_STATE_OK; // 1 for OK
 }
 
 void me_configuration_init_video(ME_Video * video) {
 
-	paletteIdRequested = NO_PALETTE_CHANGE_REQUESTED;
+	/*paletteIdRequested = NO_PALETTE_CHANGE_REQUESTED;
 
 	uint8_t* tmp = (uint8_t *)malloc(4 * VID_PAGE_SIZE);
 	memset(tmp,0,4 * VID_PAGE_SIZE);
 	
 	for (int i = 0; i < 4; ++i) {
-    _pages[i] = tmp + i * VID_PAGE_SIZE;
-	}
+    //_pages[i] = tmp + i * VID_PAGE_SIZE;
+	}*/
+	int argc = 1;
+	char fakeParam[] = "fake";
+	char *fakeargv[] = { fakeParam, NULL };
 
 	// INIT using OpenGL
-	glutInit(&argc, argv);
+	glutInit(&argc, fakeargv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(500, 500);
     glutCreateWindow("MirtilleVirtualMachine");
@@ -72,14 +77,14 @@ void me_configuration_init_video(ME_Video * video) {
 }
 
 void me_setDataBuffer(ME_Video * video, uint8_t *dataBuf, uint16_t offset) {
-	_dataBuf = dataBuf;
-	_pData.pc = dataBuf + offset;
+	//dataBuf = dataBuf;
+	//pData.pc = dataBuf + offset;
 }
 
 
 void me_readAndDrawDesigner(ME_Video* video, uint8_t color, uint16_t zoom, const Designer *ds) {
 
-	uint8_t i = _pData.fetchByte();
+	/*uint8_t i = _pData.fetchByte();
 
 	//This is 
 	if (i >= 0xC0) {	// 0xc0 = 192
@@ -107,7 +112,7 @@ void me_readAndDrawDesigner(ME_Video* video, uint8_t color, uint16_t zoom, const
 		} else {
 			warning("Video::readAndDrawPolygon() ec=0x%X (i != 2)", 0xFBB);
 		}
-	}
+	}*/
 
 }
 
@@ -120,35 +125,35 @@ void me_drawDesigner(ME_Video* video, uint8_t color, int16_t x, int16_t y){
 }
 
 
-void me_readAndDrawDesignerHierarchy(ME_Video * video, uint16_t zoom, const Designer &ds) {
+void me_readAndDrawDesignerHierarchy(ME_Video * video, uint16_t zoom, const Designer *ds) {
 	
 }
 
-uint8_t *me_getPage(Video * video, uint8_t page) {
+uint8_t *me_getPage(ME_Video * video, uint8_t page) {
 	uint8_t *p;
 	return p;
 }
 
 void me_updateDisplay(ME_Video* video, uint8_t page) {
 
-	debug(ME_DBG_VIDEO, "Video::me_updateDisplay(%d)", bufferFront1);
-
-	if (pageId != 0xFE) {
+	//debug(ME_DBG_VIDEO, "Video::me_updateDisplay(%d)", bufferFront1);
+/*
+	if (page != 0xFE) {
 		// S'il faut echanger les buffer: on le fait
-		if (pageId == 0xFF) {
-			me_SWAP(bufferSwap2, bufferFront1);
+		if (page == 0xFF) {
+			me_SWAP(video->bufferSwap2, video->bufferFront1);
 		} else {
-			bufferFront1 = me_getPage(bufferBack3);
+			video->bufferFront1 = me_getPage(video->bufferBack3);
 		}
 	}
-
+*/
 	//Q: Why 160 ?
 	//A: Because one byte gives two palette indices so
 	//   we only need to move 320/2 per line.
-  video->sys->updateDisplay(bufferFront1);
+  //video->sys->updateDisplay(bufferFront1);
 }
 
-void me_saveOrLoad(ME_Video* video, Serializer *ser) {
+void me_saveOrLoad(ME_Video* video, ME_Serializer *ser) {
 
 }
 

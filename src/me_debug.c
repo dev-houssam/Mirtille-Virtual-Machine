@@ -5,8 +5,9 @@
 	Date : 04/12/2025
 */
 
-#include "include/me_debug.h"
+#include "../include/me_debug.h"
 #include <pthread.h>
+#include <stdio.h>
 
 
 void debug(me_debug* md, 	const char * me_no_format_message){
@@ -46,7 +47,7 @@ void no_blocking_debug(me_debug * md, const char * me_formatted_message){
 		case ME_DBG_NFM:
 			pthread_t thread;
 			pthread_create(&thread, NULL, (void *) md, NULL);
-			fprintf(stderr, "%s\n", );
+			fprintf(stderr, "%s: %s\n", "Non no_blocking_debug mode error", md->message_debug);
 			break; 
 		default:
 			break;
