@@ -60,7 +60,7 @@ main(int argc, char const *argv[])
 	}
 
 	
-	Mirtille_Engine * me = me_create_MirtilleEngine(NULL, NULL, me_dataPath, me_savePath);
+	Mirtille_Engine * me = me_create_MirtilleEngine(NULL, me_dataPath, me_savePath);
 	me_configuration_init_engine(me);
 	me_run(me);
 

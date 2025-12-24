@@ -25,6 +25,11 @@ typedef struct{
 } OpcodeStub;
 
 typedef struct {
+	uint64_t * instr;
+	long int pc;
+} Instruction;
+
+typedef struct {
 	//Mirtille_VirtualMachine 
 	void (*OpcodeStub)();
 	OpcodeStub opcodeTable[100];
@@ -40,12 +45,13 @@ typedef struct {
 	// Stocke les valeurs de variables ===> on va le transformer en Banque de registers
 	me_RegisterOnInt16_t me_vmVariables[VM_NUM_VARIABLES];
 	uint8_t _stackPtr;
-
+	uint8_t none;
+	Instruction instructions;
 } Mirtille_VirtualMachine;
 
 
-void me_init(Mirtille_VirtualMachine *me, ME_Video *vid, ME_System *stub);
-void me_configuration_init(Mirtille_VirtualMachine * me);
+Mirtille_VirtualMachine * create_VirtualMachine(ME_Video *vid, ME_System *stub);
+void me_configuration_init_VM(Mirtille_VirtualMachine * me);
 void me_op_mov(Mirtille_VirtualMachine *me);
 void me_op_add(Mirtille_VirtualMachine *me);
 void me_op_call(Mirtille_VirtualMachine *me);

@@ -2,99 +2,104 @@
 #include "../include/me_video.h"
 #include "../include/me_system.h"
 
-Mirtille_VirtualMachine * me_init(Mirtille_VirtualMachine *me, ME_Video *vid, ME_System *stub){
-	me->video = vid;
-	me->sys 	= stub;
-}
-
-void me_configuration_init(Mirtille_VirtualMachine * me) {
-	memset(me->vmVariables, 0, sizeof(me->vmVariables));
-	me->vmVariables[0x54] = 0x81;
-	me->vmVariables[VM_VARIABLE_RANDOM_SEED] = time(0); // preparation de Noyau de generation de nombre aléatoire
-	#ifdef BYPASS_PROTECTION
-	   // these 3 variables are set by the game code
-	   me->vmVariables[0xBC] = 0x10;
-	   me->vmVariables[0xC6] = 0x80;
-	   me->vmVariables[0xF2] = 4000;
-	   // these 2 variables are set by the engine executable
-	   me->vmVariables[0xDC] = 33;
-	#endif
-}
 
 
-
-void op_mov(Mirtille_VirtualMachine * me) {
-	uint8_t dstVariableId = me->_scriptPtr.fetchByte();
-	uint8_t srcVariableId = me->_scriptPtr.fetchByte();	
-	debug(DBG_VM, "Mirtille_VirtualMachine: op_mov(0x%02X, 0x%02X)", dstVariableId, srcVariableId);
-	me->vmVariables[dstVariableId] = me->vmVariables[srcVariableId];
-}
-
-void op_add(Mirtille_VirtualMachine * me) {
-	uint8_t dstVariableId = me->_scriptPtr.fetchByte();
-	uint8_t srcVariableId = me->_scriptPtr.fetchByte();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_add(0x%02X, 0x%02X)", dstVariableId, srcVariableId);
-	me->vmVariables[dstVariableId] += me->vmVariables[srcVariableId];
-}
-
-
-void op_call(Mirtille_VirtualMachine * me) {
-
-	uint16_t offset = me->_scriptPtr.fetchWord();
-	uint8_t sp = me->_stackPtr;
-
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_call(0x%X)", offset);
-	me->_scriptStackCalls[sp] = me->_scriptPtr.pc - res->segBytecode;
-	if (me->_stackPtr == 0xFF) {
-		error("Mirtille_VirtualMachine::op_call() ec=0x%X stack overflow", 0x8F);
+Mirtille_VirtualMachine * create_VirtualMachine( ME_Video *vid, ME_System *stub){
+	
+	Mirtille_VirtualMachine * MVM = (Mirtille_VirtualMachine*) malloc(sizeof(Mirtille_VirtualMachine));
+	if(NULL == MVM){
+		return NULL;
 	}
-	++(me->_stackPtr);
-	me->_scriptPtr.pc = res->segBytecode + offset ;
+	MVM->me_video = vid;
+	MVM->me_system 	= stub;
+	return MVM;
 }
 
-void op_ret(Mirtille_VirtualMachine * me) {
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_ret()");
-	if (me->_stackPtr == 0) {
-		error("Mirtille_VirtualMachine::op_ret() ec=0x%X stack underflow", 0x8F);
+void me_configuration_init_VM(Mirtille_VirtualMachine * me) {
+	memset(me->me_vmVariables, 0, sizeof(me->me_vmVariables));
+}
+
+uint8_t fetchByteFromInstructionsSet(Instruction * instructionSet){
+	return instructionSet->instr[(instructionSet->pc)++];
+}
+
+uint16_t fetchWordFromInstructionsSet(Instruction * instructionSet){
+	return instructionSet->instr[(instructionSet->pc)++];
+}
+
+
+void me_op_mov(Mirtille_VirtualMachine * me) {
+	uint8_t dstVariableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	uint8_t srcVariableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));	
+	//debug(DBG_VM, "Mirtille_VirtualMachine: op_mov(0x%02X, 0x%02X)", dstVariableId, srcVariableId);
+	me->me_vmVariables[dstVariableId] = me->me_vmVariables[srcVariableId];
+}
+
+void me_op_add(Mirtille_VirtualMachine * me) {
+	uint8_t dstVariableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	uint8_t srcVariableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_add(0x%02X, 0x%02X)", dstVariableId, srcVariableId);
+	me->me_vmVariables[dstVariableId] += me->me_vmVariables[srcVariableId];
+}
+
+
+void me_op_call(Mirtille_VirtualMachine * me) {
+
+	uint16_t offset = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	//uint8_t sp = me->none;
+
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_call(0x%X)", offset);
+	//me->_scriptStackCalls[sp] = me->_scriptPtr.pc - res->segBytecode;
+	if (me->none == 0xFF) {
+		//error("Mirtille_VirtualMachine::op_call() ec=0x%X stack overflow", 0x8F);
+	}
+	++(me->none);
+	//me->_scriptPtr.pc = res->segBytecode + offset ;
+}
+
+void me_op_ret(Mirtille_VirtualMachine * me) {
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_ret()");
+	if (me->none == 0) {
+		//error("Mirtille_VirtualMachine::op_ret() ec=0x%X stack underflow", 0x8F);
 	}	
-	--(me->_stackPtr);
-	uint8_t sp = me->_stackPtr;
-	me->_scriptPtr.pc = res->segBytecode + me->_scriptStackCalls[sp];
+	--(me->none);
+	uint8_t sp = me->none;
+	//me->_scriptPtr.pc = res->segBytecode + me->_scriptStackCalls[sp];
 }
 
 
-void op_jmp(Mirtille_VirtualMachine * me) {
-	uint16_t pcOffset = me->_scriptPtr.fetchWord();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_jmp(0x%02X)", pcOffset);
-	me->_scriptPtr.pc = res->segBytecode + pcOffset;	
+void me_op_jmp(Mirtille_VirtualMachine * me) {
+	uint16_t pcOffset = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_jmp(0x%02X)", pcOffset);
+	me->instructions.pc = 1 + pcOffset;	
 }
 
 
-void op_jnz(Mirtille_VirtualMachine * me) {
-	uint8_t i = me->_scriptPtr.fetchByte();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_jnz(0x%02X)", i);
-	--(me->vmVariables[i]);
-	if (me->vmVariables[i] != 0) {
-		op_jmp();
+void me_op_jnz(Mirtille_VirtualMachine * me) {
+	uint8_t i = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_jnz(0x%02X)", i);
+	--(me->me_vmVariables[i]);
+	if (me->me_vmVariables[i] != 0) {
+		//op_jmp();
 	} else {
-		me->_scriptPtr.fetchWord();
+		/*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
 	}
 }
 
-void op_condJmp(Mirtille_VirtualMachine * me) {
-	uint8_t opcode = me->_scriptPtr.fetchByte();
-  const uint8_t var = me->_scriptPtr.fetchByte();
-  int16_t b = me->vmVariables[var];
+void me_op_condJmp(Mirtille_VirtualMachine * me) {
+	uint8_t opcode = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+  const uint8_t var = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+  int16_t b = me->me_vmVariables[var];
 	int16_t a;
 
 	if (opcode & 0x80) {
-		a = me->vmVariables[me->_scriptPtr.fetchByte()];
+		//a = me->me_vmVariables[me->_scriptPtr.fetchByte()];
 	} else if (opcode & 0x40) {
-    a = me->_scriptPtr.fetchWord();
+    a = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
 	} else {
-    a = me->_scriptPtr.fetchByte();
+    a = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
 	}
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_condJmp(%d, 0x%02X, 0x%02X)", opcode, b, a);
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_condJmp(%d, 0x%02X, 0x%02X)", opcode, b, a);
 
 	// Check if the conditional value is met.
 	bool expr = false;
@@ -110,14 +115,14 @@ void op_condJmp(Mirtille_VirtualMachine * me) {
         //
         if (b == 0x29 && (opcode & 0x80) != 0) {
           // 4 symbols
-          me->vmVariables[0x29] = me->vmVariables[0x1E];
-          me->vmVariables[0x2A] = me->vmVariables[0x1F];
-          me->vmVariables[0x2B] = me->vmVariables[0x20];
-          me->vmVariables[0x2C] = me->vmVariables[0x21];
+          me->me_vmVariables[0x29] = me->me_vmVariables[0x1E];
+          me->me_vmVariables[0x2A] = me->me_vmVariables[0x1F];
+          me->me_vmVariables[0x2B] = me->me_vmVariables[0x20];
+          me->me_vmVariables[0x2C] = me->me_vmVariables[0x21];
           // counters
-          me->vmVariables[0x32] = 6;
-          me->vmVariables[0x64] = 20;
-          warning("Script::op_condJmp() bypassing protection");
+          me->me_vmVariables[0x32] = 6;
+          me->me_vmVariables[0x64] = 20;
+          //warning("Script::op_condJmp() bypassing protection");
           expr = true;
         }
       }
@@ -139,161 +144,137 @@ void op_condJmp(Mirtille_VirtualMachine * me) {
 		expr = (b <= a);
 		break;
 	default:
-		warning("Mirtille_VirtualMachine::op_condJmp() invalid condition %d", (opcode & 7));
+		//warning("Mirtille_VirtualMachine::op_condJmp() invalid condition %d", (opcode & 7));
 		break;
 	}
 
 	if (expr) {
-		op_jmp();
+		//op_jmp();
 	} else {
-		me->_scriptPtr.fetchWord();
+		/*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
 	}
 
 }
 
 
-void op_selectVideoPage(Mirtille_VirtualMachine * me) {
-	uint8_t frameBufferId = me->_scriptPtr.fetchByte();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_selectVideoPage(%d)", frameBufferId);
-	me->video->changePagePtr1(frameBufferId);
+void me_op_selectVideoPage(Mirtille_VirtualMachine * me) {
+	uint8_t frameBufferId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_selectVideoPage(%d)", frameBufferId);
+	//me_changePagePtr1(me->me_video, frameBufferId);
 }
 
-void op_fillVideoPage(Mirtille_VirtualMachine * me) {
-	uint8_t pageId = me->_scriptPtr.fetchByte();
-	uint8_t color = me->_scriptPtr.fetchByte();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_fillVideoPage(%d, %d)", pageId, color);
-	me->video->fillPage(pageId, color);
+void me_op_fillVideoPage(Mirtille_VirtualMachine * me) {
+	uint8_t pageId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	uint8_t color = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_fillVideoPage(%d, %d)", pageId, color);
+	//me_fillPage(me->me_video, pageId, color);
 }
 
-void op_copyVideoPage(Mirtille_VirtualMachine * me) {
-	uint8_t srcPageId = me->_scriptPtr.fetchByte();
-	uint8_t dstPageId = me->_scriptPtr.fetchByte();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_copyVideoPage(%d, %d)", srcPageId, dstPageId);
-	me->video->copyPage(srcPageId, dstPageId, me->vmVariables[VM_VARIABLE_SCROLL_Y]);
+void me_op_copyVideoPage(Mirtille_VirtualMachine * me) {
+	uint8_t srcPageId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	uint8_t dstPageId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_copyVideoPage(%d, %d)", srcPageId, dstPageId);
+	//me_copyPage(me->me_video, srcPageId, dstPageId, me->me_vmVariables[10]);
 }
 
 
 uint32_t lastTimeStamp = 0;
-void op_blitFramebuffer(Mirtille_VirtualMachine * me) {
+void me_op_blitFramebuffer(Mirtille_VirtualMachine * me) {
 
-	uint8_t pageId = _scriptPtr.fetchByte();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_blitFramebuffer(%d)", pageId);
-	inp_handleSpecialKeys();
-
-  int32_t delay = sys->getTimeStamp() - lastTimeStamp;
-  int32_t timeToSleep = me->vmVariables[VM_VARIABLE_PAUSE_SLICES] * 20 - delay;
+	uint8_t pageId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_blitFramebuffer(%d)", pageId);
+	int getTimeStamp = 2;
+  int32_t delay = getTimeStamp - lastTimeStamp;
+  int32_t timeToSleep = me->me_vmVariables[10] * 20 - delay;
 
   // The bytecode will set vmVariables[VM_VARIABLE_PAUSE_SLICES] from 1 to 5
   // The virtual machine hence indicate how long the image should be displayed.
 
   if (timeToSleep > 0) {
-    sys->sleep(timeToSleep);
+    //sys->sleep(timeToSleep);
   }
 
-  lastTimeStamp = sys->getTimeStamp();
+  lastTimeStamp = getTimeStamp;
 
 	//What is this ??? aaahhhh ! we are looking in 0xF7 to put register to 0 as reset memory case before update video screen !!! OK ???
-	me->vmVariables[0xF7] = 0;
+	me->me_vmVariables[0xF7] = 0;
 
-	me->video->updateDisplay(pageId);
+	me_updateDisplay(me->me_video, pageId);
+
 }
 
-void op_drawString(Mirtille_VirtualMachine * me) {
-	uint16_t stringId = me->_scriptPtr.fetchWord();
-	uint16_t x = me->_scriptPtr.fetchByte();
-	uint16_t y = me->_scriptPtr.fetchByte();
-	uint16_t color = me->_scriptPtr.fetchByte();
-
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_drawString(0x%03X, %d, %d, %d)", stringId, x, y, color);
-
-	me->video->drawString(color, x, y, stringId);
+void me_op_sub(Mirtille_VirtualMachine * me) {
+	uint8_t i = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	uint8_t j = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_sub(0x%02X, 0x%02X)", i, j);
+	me->me_vmVariables[i] -= me->me_vmVariables[j];
 }
 
-void op_sub(Mirtille_VirtualMachine * me) {
-	uint8_t i = me->_scriptPtr.fetchByte();
-	uint8_t j = me->_scriptPtr.fetchByte();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_sub(0x%02X, 0x%02X)", i, j);
-	me->vmVariables[i] -= me->vmVariables[j];
+void me_op_and(Mirtille_VirtualMachine * me) {
+	uint8_t variableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	uint16_t n = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_and(0x%02X, %d)", variableId, n);
+	me->me_vmVariables[variableId] = (uint16_t)me->me_vmVariables[variableId] & n;
 }
 
-void op_and(Mirtille_VirtualMachine * me) {
-	uint8_t variableId = me->_scriptPtr.fetchByte();
-	uint16_t n = me->_scriptPtr.fetchWord();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_and(0x%02X, %d)", variableId, n);
-	me->vmVariables[variableId] = (uint16_t)me->vmVariables[variableId] & n;
+void me_op_or(Mirtille_VirtualMachine * me) {
+	uint8_t variableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	uint16_t value = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_or(0x%02X, %d)", variableId, value);
+	me->me_vmVariables[variableId] = (uint16_t)me->me_vmVariables[variableId] | value;
 }
 
-void op_or(Mirtille_VirtualMachine * me) {
-	uint8_t variableId = me->_scriptPtr.fetchByte();
-	uint16_t value = me->_scriptPtr.fetchWord();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_or(0x%02X, %d)", variableId, value);
-	me->vmVariables[variableId] = (uint16_t)me->vmVariables[variableId] | value;
+
+void me_op_shl(Mirtille_VirtualMachine * me) {
+	uint8_t variableId =		  /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	uint16_t leftShiftValue = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_shl(0x%02X, %d)", variableId, leftShiftValue);
+	me->me_vmVariables[variableId] = (uint16_t)me->me_vmVariables[variableId] << leftShiftValue;
 }
 
-void op_shl(Mirtille_VirtualMachine * me) {
-	uint8_t variableId =		  me->_scriptPtr.fetchByte();
-	uint16_t leftShiftValue = me->_scriptPtr.fetchWord();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_shl(0x%02X, %d)", variableId, leftShiftValue);
-	me->vmVariables[variableId] = (uint16_t)me->vmVariables[variableId] << leftShiftValue;
+void me_op_shr(Mirtille_VirtualMachine * me) {
+	uint8_t variableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	uint16_t rightShiftValue = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_shr(0x%02X, %d)", variableId, rightShiftValue);
+	me->me_vmVariables[variableId] = (uint16_t)me->me_vmVariables[variableId] >> rightShiftValue;
 }
 
-void op_shr(Mirtille_VirtualMachine * me) {
-	uint8_t variableId = me->_scriptPtr.fetchByte();
-	uint16_t rightShiftValue = me->_scriptPtr.fetchWord();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_shr(0x%02X, %d)", variableId, rightShiftValue);
-	me->vmVariables[variableId] = (uint16_t)me->vmVariables[variableId] >> rightShiftValue;
+void me_op_updateMemList(Mirtille_VirtualMachine * me) {
+	uint16_t resourceId = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	//debug(DBG_VM, "Mirtille_VirtualMachine::op_updateMemList(%d)", resourceId);
+
 }
 
-void op_updateMemList(Mirtille_VirtualMachine * me) {
-	uint16_t resourceId = me->_scriptPtr.fetchWord();
-	debug(DBG_VM, "Mirtille_VirtualMachine::op_updateMemList(%d)", resourceId);
 
-	if (resourceId == 0) {
-		res->invalidateRes();
-	} else {
-		res->loadPartsOrMemoryEntry(resourceId);
-	}
-}
-
-#define COLOR_BLACK 0xFF
-#define DEFAULT_ZOOM 0x40
-
-
-void inp_handleSpecialKeys(Mirtille_VirtualMachine * me) {
-
-	if (sys->input.pause) {
-
-		if (res->currentPartId != GAME_PART1 && res->currentPartId != GAME_PART2) {
-			sys->input.pause = false;
-			while (!sys->input.pause) {
+void me_inp_handleSpecialKeys(Mirtille_VirtualMachine * me) {
+	/*if (me->sys->input.pause) {
+			me->sys->input.pause = false;
+			while (!me->sys->input.pause) {
 				sys->processEvents();
 				sys->sleep(200);
 			}
-		}
-		sys->input.pause = false;
+		
+		me->sys->input.pause = false;
 	}
 
-	if (sys->input.code) {
-		sys->input.code = false;
-		if (res->currentPartId != GAME_PART_LAST && res->currentPartId != GAME_PART_FIRST) {
-			res->requestedNextPart = GAME_PART_LAST;
-		}
+	if (me->sys->input.code) {
+		me->sys->input.code = false;
 	}
 
 	// XXX
-	if (me->vmVariables[0xC9] == 1) {
-		warning("Mirtille_VirtualMachine::inp_handleSpecialKeys() unhandled case (vmVariables[0xC9] == 1)");
-	}
+	if (me->me_vmVariables[0xC9] == 1) {
+		//warning("Mirtille_VirtualMachine::inp_handleSpecialKeys() unhandled case (vmVariables[0xC9] == 1)");
+	}*/
 
 }
 
-void me_saveOrLoad(Mirtille_VirtualMachine * me, Serializer &ser) {
-	Serializer::Entry entries[] = {
-		SE_ARRAY(me->vmVariables, 0x100, Serializer::SES_INT16, VER(1)),
+void me_saveOrLoad_VM(Mirtille_VirtualMachine * me, ME_Serializer *ser) {
+	/*Serializer::Entry entries[] = {
+		SE_ARRAY(me->me_vmVariables, 0x100, Serializer::SES_INT16, VER(1)),
 		SE_ARRAY(me->_scriptStackCalls, 0x100, Serializer::SES_INT16, VER(1)),
 		SE_END()
 	};
-	ser.saveOrLoadEntries(entries);
+	ser.saveOrLoadEntries(entries);*/
 }
 
 void me_hostFrame(Mirtille_VirtualMachine *me){

@@ -2,21 +2,25 @@
 #include "../include/me_system.h"
 
 
-void me_create_MirtilleEngine(Mirtille_Engine * me, System *paramSys, const char *dataDir, const char *saveDir){
+Mirtille_Engine * me_create_MirtilleEngine(ME_System *paramSys, const char *dataDir, const char *saveDir){
+	Mirtille_Engine * me = (Mirtille_Engine *) malloc(sizeof(Mirtille_Engine));
+	if(me==NULL){
+		return NULL;
+	}
 	me->sys 			 = paramSys;
-	me->vm 				 = create_MirtualMachine(&video, sys);
-	init(me->video, &res, sys); 
+	me->vm 				 = create_VirtualMachine(&(me->video), me->sys);
 	me->_dataDir 	 = dataDir; 
 	me->_saveDir 	 = saveDir; 
 	me->_stateSlot = 0;
+	return me;
 }
 
 
 void me_run(Mirtille_Engine * me) {
-	while (!me->sys->input.quit) {
+	/*while (!me->sys->input.quit) {
 		me_processInput(me);
 		me_hostFrame(me->vm);
-	}
+	}*/
 }
 
 // void me_destroy_System(ME_System * me_system);
@@ -28,9 +32,9 @@ void me_destroy_MirtilleEngine(Mirtille_Engine * me){
 
 void me_configuration_init (Mirtille_Engine * me) {
 	//Init system
-	me->sys->init("Mirtille Virtual Machine");
+	me_init_System(me->sys, "Mirtille Virtual Machine");
 	me_configuration_init_video(me->video);
-	me->vm.init();
+	me_configuration_init_VM(me->vm);
 
 }
 
@@ -46,6 +50,7 @@ void me_finish(Mirtille_Engine * me) {
 
 
 void me_processInput(Mirtille_Engine * me) {
+	/*
 	if (me->sys->input.load) {
 		me_loadOSState(me->_stateSlot);
 		me->sys->input.load = false;
@@ -62,6 +67,7 @@ void me_processInput(Mirtille_Engine * me) {
 		}
 		me->sys->input.stateSlot = 0;
 	}
+	*/
 }
 
 
@@ -78,6 +84,7 @@ void me_saveOSState(Mirtille_Engine * me, uint8_t slot, const char *desc) {
 		 ----------- --------
 		 | CONTENTS | N  BITS |
 	*/
+	/*
 	char stateFile[20];
 	me_makeOSStateName(slot, stateFile);
 	File f(true);
@@ -101,6 +108,7 @@ void me_saveOSState(Mirtille_Engine * me, uint8_t slot, const char *desc) {
 			debug(DBG_INFO, "Saved state to slot %d", me->_stateSlot);
 		}
 	}
+	*/
 }
 
 
@@ -111,16 +119,16 @@ void me_loadOSState(Mirtille_Engine * me, uint8_t slot) {
 		 ----------- --------
 		 | CONTENTS | N  BITS |
 	*/
-
+	/*
 	char stateFile[20];
 	me_makeOSStateName(slot, stateFile);
-	File f(true);
+	//File f(true);
 	if (!f.open(stateFile, me->_saveDir, "rb")) {
-		warning("Unable to open state file '%s'", stateFile);
+		//warning("Unable to open state file '%s'", stateFile);
 	} else {
 		uint32_t id = f.readUint32BE();
 		if (id != 'AWSV') {
-			warning("Bad savegame format");
+			//warning("Bad savegame format");
 		} else {
 			// header
 			uint16_t ver = f.readUint16BE();
@@ -128,14 +136,14 @@ void me_loadOSState(Mirtille_Engine * me, uint8_t slot) {
 			char hdrdesc[32];
 			f.read(hdrdesc, sizeof(hdrdesc));
 			// contents
-			Serializer me_serz(&f, Serializer::SM_LOAD, res._memPtrStart, ver);
-			me_saveOrLoad(me->vm, me_serz);
-			me_saveOrLoad(me->video, me_serz);
+			//Serializer me_serz(&f, Serializer::SM_LOAD, res._memPtrStart, ver);
+			//me_saveOrLoad(me->vm, me_serz);
+			//me_saveOrLoad(me->video, me_serz);
 		}
 		if (f.ioErr()) {
-			warning("I/O error when loading game state");
+			//warning("I/O error when loading game state");
 		} else {
-			debug(DBG_INFO, "Loaded state from slot %d", me->_stateSlot);
+			//debug(DBG_INFO, "Loaded state from slot %d", me->_stateSlot);
 		}
-	}
+	}*/
 }

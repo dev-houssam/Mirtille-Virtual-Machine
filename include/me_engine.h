@@ -21,8 +21,8 @@ typedef struct {
 	uint8_t 	 _stateSlot;	
 } Mirtille_Engine;
 
-me_create_MirtilleEngine(Mirtille_Engine * me, ME_System *stub, const char *dataDir, const char *saveDir);
-me_destroy_MirtilleEngine(Mirtille_Engine * me);
+Mirtille_Engine * me_create_MirtilleEngine(ME_System *paramSys, const char *dataDir, const char *saveDir);
+void me_destroy_MirtilleEngine(Mirtille_Engine * me);
 
 void me_run(Mirtille_Engine * me);
 void me_init_engine(Mirtille_Engine * me);
