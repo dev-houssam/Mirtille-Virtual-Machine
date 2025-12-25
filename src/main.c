@@ -68,7 +68,6 @@ main(int argc, char const *argv[])
 	Mirtille_Engine * me = me_create_MirtilleEngine(me_system, me_dataPath, me_savePath);
 	perror("ENGINE: State");
 	
-
 	
 	me_configuration_init_engine(me);
 	
