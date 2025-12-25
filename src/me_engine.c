@@ -54,20 +54,23 @@ uint64_t fetch64bitsInstruction(Instruction * instructionSet){
 
 // OP  |00000000.xxxxxxxx.xxxxxxxx.xxxxxxxx|
 uint8_t fetch8bitsInstructionOp(uint64_t instruction){
-	
-	return 0;
+	return instruction << 50;
 }
 
 // DST |00000000.00000000.xxxxxxxx.xxxxxxxx|
 uint8_t fetch8bitsInstructionDst(uint64_t instruction){
 	
-	return 0;
+	return instruction << 40;
 }
 
 // DST |00000000.00000000.xxxxxxxx.xxxxxxxx|
 uint16_t fetch16bitsInstructionSrc(uint64_t instruction){
 	
-	return 0;
+	return 32;
+}
+
+void printX64Instruction(uint64_t instruction){
+	printf("OP=%ld op1=%ld op2=%ld func=%ld\n", instruction << 8, instruction << 16, instruction << 32, instruction << 42 );
 }
 
 
@@ -75,10 +78,10 @@ void me_run(Mirtille_Engine * me) {
 	printf("RUN\n");
 	me->vm->instructions.instr = (uint64_t * ) malloc(sizeof(uint64_t) * 100);
 	for(int i = 0; i < 100; i++){
-		me->vm->instructions.instr[i] = 0xFFFFFF & i; 
+		me->vm->instructions.instr[i] = 0xFFFFFA & i; 
 	}
 	me->vm->instructions.pc = 0;
-	while (me->vm->instructions.pc < 100) {
+	while (me->vm->instructions.pc < 10000) {
 		uint64_t instruction = fetch64bitsInstruction(&me->vm->instructions);
         uint8_t op 			 = fetch8bitsInstructionOp(instruction);
         uint8_t dst 		 = fetch8bitsInstructionDst(instruction);
@@ -95,7 +98,6 @@ void me_run(Mirtille_Engine * me) {
 				me_op_fillVideoPage(me->vm);
 				me_op_copyVideoPage(me->vm);
 				me_op_blitFramebuffer(me->vm);	
-				
 				me_op_sub(me->vm);
 				me_op_and(me->vm);
 				me_op_or(me->vm);
@@ -108,11 +110,11 @@ void me_run(Mirtille_Engine * me) {
 
         }
 		//me_processInput(me);
-		me_hostFrame(me->vm);
+		//me_hostFrame(me->vm);
 		//Fetch Instruction
 		//VM :: Instruction instructions;
 		//uint8_t byteOp = fetchByteFromInstructionsSet(&me->vm->instructions);
-		printf("00 00 10 01 00 \n");
+		printX64Instruction(instruction);
 	}
 }
 
