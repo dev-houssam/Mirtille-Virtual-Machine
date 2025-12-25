@@ -3,11 +3,14 @@
 
 #pragma once
 
+#include <assert.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include "me_network.h"
+#include "me_graph.h"
 
 typedef struct me_trame_ethernet {
     uint8_t preambule[7];
@@ -23,10 +26,12 @@ typedef struct me_trame_ethernet {
 me_trame_ethernet me_init_trame(me_mac mac_src, me_mac mac_dest, uint16_t type, const char* message);
 void me_deinit_trame(me_trame_ethernet* t);
 
+bool me_parcours_switch_recursif(me_subNetwork* net, me_machine* equip, me_sommet id_equip, me_trame_ethernet* t, uint port);
+
 void me_afficher_trame(me_trame_ethernet* t);
 void me_afficher_trame_hexa(me_trame_ethernet* t);
 void me_type_to_str(char* protocole, uint16_t type);
 
-void me_envoyer_trame(me_network* net, me_mac adr_src, me_mac adr_dst, const char* message, const char* protocole);
+void me_envoyer_trame(me_subNetwork* net, me_mac adr_src, me_mac adr_dst, const char* message, const char* protocole);
 
 #endif

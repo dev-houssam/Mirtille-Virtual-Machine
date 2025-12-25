@@ -19,9 +19,11 @@ set(SRCS
     src/me_memory.c
     src/me_sound.c
     src/me_trame.c
-    src/testNet.c
     )
     
+# src/testNet.c
+
+
 set(HEADERS
     include/me_ai.h
     include/me_graph.h
@@ -47,12 +49,20 @@ set(HEADERS
 
 add_executable(MVM ${SRCS} ${HEADERS})
 
+# set(GLUT /home/houssam/freeglut)
+
 # ouou
 # set(glfw3_DIR /usr/local/lib/cmake/glfw3)
 # set(glm_DIR /usr/local/lib/cmake/glm)
 
+# include("/home/houssam/freeglut/CMakeLists.txt")
+
+# add_definitions(-lglut -lGLU -lGL)
+
+# find_package(libglut REQUIRED)
+
 find_package(OpenGL REQUIRED)
-#find_package(GLUT REQUIRED)
+# find_package(GLUT REQUIRED)
 #find_package(GLEW REQUIRED)
 
 # find_package(glfw3 REQUIRED)
@@ -61,9 +71,11 @@ find_package(OpenGL REQUIRED)
 
 # find_package(OpenGL REQUIRED)
 
+# target_link_libraries(MVM PUBLIC GL GLUT portaudio)
 
+add_definitions(-lGL -lGLU -lglut -lpthread -D_REENTRANT)
 
-target_link_libraries(MVM PUBLIC GL GLUT portaudio)
+target_link_libraries(MVM PUBLIC GL glut GLU  portaudio)
 
 
 # target_link_libraries(app PUBLIC stb glfw3 GL X11)
@@ -75,3 +87,5 @@ include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
 # target_link_libraries(MirtilleVirtualMachine ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} )
 
 # add_subdirectory("path to PortAudio location" "some binary directory" EXCLUDE_FROM_ALL)
+
+# rm -rf CMakeFiles/ cmake_install.cmake CMakeCache.txt

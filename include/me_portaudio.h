@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <assert.h>
+
 
 #define SAMPLE_RATE            (44100)
 
@@ -68,7 +70,7 @@ double gInOutScaler = 1.0;
 #define INPUT_DEVICE           (Pa_GetDefaultInputDevice())
 #define OUTPUT_DEVICE          (Pa_GetDefaultOutputDevice())
 
-static PaError TestConfiguration( WireConfig_t *config );
+//static PaError TestConfiguration( WireConfig_t *config );
 
 static int wireCallback( const void *inputBuffer, void *outputBuffer,
                          unsigned long framesPerBuffer,

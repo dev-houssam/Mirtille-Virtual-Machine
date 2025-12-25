@@ -1,11 +1,12 @@
 #include "../include/me_trame.h"
+#include "../include/me_graph.h"
 #include <stdlib.h>
 
-uint16_t str_to_type(const char* protocole);
-bool parcours_switch_recursif(me_network* net, me_machine* equip, me_sommet id_equip, me_trame_ethernet* t, uint port);    //Retourne true si la trame est arrivée, false sinon
+uint16_t me_str_to_type(const char* protocole);
+    //Retourne true si la trame est arrivée, false sinon
 
-trame_ethernet me_init_trame(me_mac mac_src, mac mac_dest, uint16_t type, const char* message){
-   trame_ethernet t;
+me_trame_ethernet me_init_trame(me_mac mac_src, me_mac mac_dest, uint16_t type, const char* message){
+   me_trame_ethernet t;
    memcpy(t.preambule, (uint8_t[]){0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA}, 7);
    t.sfd = 0xAB;
    t.type = type;
@@ -27,10 +28,12 @@ void me_deinit_trame(me_trame_ethernet* t){
 }
 
 void me_afficher_trame(me_trame_ethernet* t){
-   printf("%s -> %s\n", mac_to_string(t->src), mac_to_string(t->dest));
+   /*printf("%s -> %s\n", 
+      (const char *) me_mac_to_string(t->src),
+      (const char *) me_mac_to_string(t->dest));*/
 
    char protocole[32];
-   type_to_str(protocole, t->type);
+   me_type_to_str(protocole, t->type);
    printf("Type : 0x%04X (%s)\n", t->type, protocole);
    printf("Data : %s\n", (char*) t->data);
    
@@ -47,10 +50,10 @@ void me_afficher_trame_hexa(me_trame_ethernet* t){
     printf("%02X ", t->sfd);
 
     // Adresse MAC destination 
-    printf("%s ", mac_to_string_hexa(t->dest));
+    //printf("%s ", me_mac_to_string_hexa(t->dest));
 
     // Adresse MAC source
-    printf("%s ", mac_to_string_hexa(t->src));
+    //printf("%s ", me_mac_to_string_hexa(t->src));
 
     // Type
     printf("%02X %02X ", (t->type >> 8) & 0xFF, t->type & 0xFF);
@@ -104,7 +107,7 @@ uint16_t me_str_to_type(const char* protocole){
    return 0;
 }
 
-uint me_recup_port(me_network* net, me_sommet id_equip_face, me_sommet id_equip){
+uint me_recup_port(me_subNetwork* net, me_sommet id_equip_face, me_sommet id_equip){
    uint port_face = 0;
    
    for(uint i=0; i<net->equipements[id_equip].nb_ports; i++){
@@ -116,7 +119,22 @@ uint me_recup_port(me_network* net, me_sommet id_equip_face, me_sommet id_equip)
    return port_face;
 }
 
-bool me_parcours_switch_recursif(me_network* net, me_machine* equip, me_sommet id_equip, me_trame_ethernet* t, uint port){
+me_subNetwork_Port_t * create_port(uint port){
+   me_subNetwork_Port_t * _port = (me_subNetwork_Port_t *) malloc(sizeof(me_subNetwork_Port_t));
+   if(NULL == _port){
+      printf("Error port alloc\n");
+      return NULL;
+   }
+   _port->port = (uint *) malloc(sizeof(uint));
+   if(_port == NULL) {
+      exit(EXIT_FAILURE);
+   }
+
+   _port->port[0] = port;
+   return _port;
+}
+
+bool me_parcours_switch_recursif(me_subNetwork* net, me_machine* equip, me_sommet id_equip, me_trame_ethernet* t, uint port){
    printf("\n");
    //Verifie si l'équipement est une station
    if(equip->type == 1){
@@ -137,8 +155,8 @@ bool me_parcours_switch_recursif(me_network* net, me_machine* equip, me_sommet i
             continue;
          }
 
-         sommet id_en_face = equip->etat_ports[i].id_connecte;
-         uint port_face = recup_port(net, id_en_face, id_equip);
+         me_sommet id_en_face = equip->etat_ports[i].id_connecte;
+         uint port_face = me_recup_port(net, id_en_face, id_equip);
 
          if(net->equipements[id_en_face].type == 2 && net->equipements[id_en_face].etat_ports[port_face].etat == 2){       //Si le port est bloqué, on envoie pas
             continue;
@@ -146,7 +164,7 @@ bool me_parcours_switch_recursif(me_network* net, me_machine* equip, me_sommet i
 
          //Envoie de la trame au suivant
          printf("\t Envoi par le port %zu\n", i);
-         bool essai = parcours_switch_recursif(net, &net->equipements[id_en_face], id_en_face, t, port_face);
+         bool essai = me_parcours_switch_recursif(net, &net->equipements[id_en_face], id_en_face, t, port_face);
          
          if(essai){
             return true;     //Si on a reussi, on met à true
@@ -164,47 +182,49 @@ bool me_parcours_switch_recursif(me_network* net, me_machine* equip, me_sommet i
    printf("[Switch %zu] Trame reçue via le port %d.\n", id_equip, port); 
 
    //On verifie si l'association port/adr_source existe et on l'ajoure si non
-   int port_asso = existe_asso(equip, t->src);
+   int port_asso = me_existe_asso(equip, t->src);
 
    if(port_asso == -1){
-      ajout_asso(equip, t->src, port);
-      printf("\tApprentissage : %s -> port %d\n", mac_to_string(t->src), port);
+      //me_ajout_asso(equip, t->src, create_port(port));
+      //printf("\tApprentissage : %s -> port %d\n", me_mac_to_string(t->src), port);
+      printf("Apprentissage :: \n");
    }
 
    //On verifie si une association avec adr_dest existe
-   int port_envoie = existe_asso(equip, t->dest);
+   int port_envoie = me_existe_asso(equip, t->dest);
 
    if(port_envoie != -1){     //L'association existe
-      sommet id_face = equip->etat_ports[port_envoie].id_connecte;
-      machine* equip_face = &net->equipements[id_face];
+      me_sommet id_face = equip->etat_ports[port_envoie].id_connecte;
+      me_machine* equip_face = &net->equipements[id_face];
 
       //Cherche le port en face
-      uint port_recep = recup_port(net, id_face, id_equip);
-      printf("[Switch %zu] Destination connue : %s -> port %d\n", id_equip, mac_to_string(t->dest), port_recep);
+      //uint port_recep = me_recup_port(net, id_face, id_equip);
+      uint port_recep = 0;
+      //printf("[Switch %zu] Destination connue : %s -> port %d\n", id_equip, me_mac_to_string(t->dest), port_recep);
       printf("\t   Port %d -> équipement %zu\n", port_envoie, id_face);
 
-      return parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
+      return me_parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
    }
    else{
       for(uint i=0; i<equip->nb_ports; i++){
          if(i != port){                         //On ne renvoie pas sur le port de réception
-            sommet id_face = equip->etat_ports[i].id_connecte;
+            me_sommet id_face = equip->etat_ports[i].id_connecte;
             if(id_face >= net->nbEquipements){        //Si le port n'est connecté à rien
                continue;
             }
-            machine* equip_face = &net->equipements[id_face];
+            me_machine* equip_face = &net->equipements[id_face];
             
             //Cherche le port en face
-            uint port_recep = recup_port(net, id_equip, id_face);
+            uint port_recep = me_recup_port(net, id_equip, id_face);
 
             if(net->equipements[id_face].type == 2 && net->equipements[id_face].etat_ports[port_recep].etat == 2){       //Si le port est bloqué, on envoie pas
                continue;
             }
-
-            printf("[Switch %zu] Destination inconnue : %s -> diffusion\n", id_equip, mac_to_string(t->dest));
+            printf("Destination Inconnue\n");
+            //printf("[Switch %zu] Destination inconnue : %s -> diffusion\n", id_equip, mac_to_string(t->dest));
             printf("\t   Port %d -> équipement %zu\n", i, id_face);
 
-            bool essai = parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
+            bool essai = me_parcours_switch_recursif(net, equip_face, id_face, t, port_recep);
 
             if(essai){
                return true;
@@ -220,30 +240,30 @@ bool me_parcours_switch_recursif(me_network* net, me_machine* equip, me_sommet i
 
 }
 
-void me_envoyer_trame(me_network* net, me_mac adr_src, me_mac adr_dst, const char* message, const char* protocole){
+void me_envoyer_trame(me_subNetwork* net, me_mac adr_src, me_mac adr_dst, const char* message, const char* protocole){
    //verifie si les deux stations sont dans le reseau
-   if(!existe_machine(net, adr_src)){
+   if(!me_existe_machine(net, adr_src)){
       printf("La station de départ n'existe pas dans le réseau\n");
       return;
    }
 
-   if(!existe_machine(net, adr_dst)){
+   if(!me_existe_machine(net, adr_dst)){
       printf("La station d'arrivée n'existe pas dans le réseau\n");
       return;
    }
 
    //Création de la trame
-   uint16_t type = str_to_type(protocole);
-   trame_ethernet t = init_trame(adr_src, adr_dst, type, message);
+   uint16_t type = me_str_to_type(protocole);
+   me_trame_ethernet t = me_init_trame(adr_src, adr_dst, type, message);
 
    //Affichage de la trame 
    printf("\n=== Trame Ethernet ===\n");
-   afficher_trame(&t);
+   me_afficher_trame(&t);
 
    //Cherche le numero de sommet de la station source
-   sommet src = -1;
+   me_sommet src = -1;
    for(size_t i =0; i<net->nbEquipements; i++){
-      machine equip = net->equipements[i];
+      me_machine equip = net->equipements[i];
       if(memcmp(equip.adr_mac, adr_src, 6) == 0){        //Si c'est la station source
          src = i;
          break;
@@ -251,13 +271,13 @@ void me_envoyer_trame(me_network* net, me_mac adr_src, me_mac adr_dst, const cha
    }
 
    //Cherche le switch qui est connecté à la station source
-   machine* sw = NULL;
-   sommet switch_id = -1;
+   me_machine* sw = NULL;
+   me_sommet switch_id = -1;
    for(size_t i =0; i<net->nbEquipements; i++){
-      machine equip = net->equipements[i];
+      me_machine equip = net->equipements[i];
       if(equip.type == 2){                         //Si c'est un switch
-         arete a = (arete) {src, i, 0};
-         if(existe_arete(net->g, a)){
+         me_arete a = (me_arete) {src, i, 0};
+         if(me_existe_arete(net->g, a)){
             sw = &net->equipements[i];
             switch_id = i;
             break;
@@ -283,7 +303,7 @@ void me_envoyer_trame(me_network* net, me_mac adr_src, me_mac adr_dst, const cha
    printf("\n---------------\n");
    printf("Envoi de la trame...\n");
    printf("----------------\n");
-   bool reussite = parcours_switch_recursif(net, sw, switch_id, &t, port);
+   bool reussite = me_parcours_switch_recursif(net, sw, switch_id, &t, port);
 
    //Affiche le retour
    if(!reussite){
@@ -291,5 +311,5 @@ void me_envoyer_trame(me_network* net, me_mac adr_src, me_mac adr_dst, const cha
    }
 
    //Fin de l'envoi de la trame, on la deinit
-   deinit_trame(&t);
+   me_deinit_trame(&t);
 }

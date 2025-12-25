@@ -40,7 +40,7 @@ void* no_bloking_printing(void* me_arg) {
 void no_blocking_debug(me_debug * md, const char * me_formatted_message){
 	if (md == NULL) return;
 
-	md->message_debug = me_formatted_message;
+	//md->message_debug = me_formatted_message;
 	md->level = 0;
 
 	switch(md->mode){

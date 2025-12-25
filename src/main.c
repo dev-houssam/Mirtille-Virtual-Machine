@@ -3,6 +3,7 @@
 #include <string.h>
 #include "../include/me_error.h"
 #include "../include/me_engine.h"
+#include "../include/me_system.h"
 
 
 /*int parseOption(const char * path, const char * path, &me_dataPath){
@@ -54,18 +55,30 @@ main(int argc, char const *argv[])
 {
 	const char *me_dataPath = ".";
 	const char *me_savePath = ".";
-
+	
 	if(0 == me_checkOptions(argc, argv, me_dataPath, me_savePath)){
+		perror("me_checkOptions(argc, argv, me_dataPath, me_savePath) : Error");
 		return ME_EXIT_FAILURE;
 	}
+	perror("CHECKING-OK: Before State");
+	perror("Création de la machine virtuelle");
+	ME_System * me_system = create_MirtilleSystem();
+	perror("System: State");
+
+	Mirtille_Engine * me = me_create_MirtilleEngine(me_system, me_dataPath, me_savePath);
+	perror("ENGINE: State");
+	
 
 	
-	Mirtille_Engine * me = me_create_MirtilleEngine(NULL, me_dataPath, me_savePath);
 	me_configuration_init_engine(me);
+	
+	
 	me_run(me);
+	perror("RUN: After State");
 
 
 	me_destroy_MirtilleEngine(me);
+	perror("Destruction de la machine virtuelle");
 
 	return ME_EXIT_FAILURE;
 }

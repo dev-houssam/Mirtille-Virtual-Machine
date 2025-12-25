@@ -9,6 +9,7 @@
 #ifndef __ME_UTILS_H__
 #define __ME_UTILS_H__
 
+#include <assert.h>
 
 
 #endif

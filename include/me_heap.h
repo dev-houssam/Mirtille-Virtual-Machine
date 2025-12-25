@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <assert.h>
+
 
 // Un Agent est une donnée, un agent est comme un fichier, un agent est comme objet, et un agent peut etre un pointeurs
 

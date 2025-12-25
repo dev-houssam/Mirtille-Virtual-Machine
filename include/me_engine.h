@@ -6,6 +6,8 @@
 #include "me_video.h"
 #include "me_system.h"
 
+#include <assert.h>
+
 struct System;
 
 typedef struct {
@@ -14,8 +16,8 @@ typedef struct {
 	} slot;
 
 	ME_System *sys;
-	ME_Video video;
-	Mirtille_VirtualMachine vm;
+	ME_Video *video;
+	Mirtille_VirtualMachine* vm;
 	char * _dataDir;
 	char * _saveDir;
 	uint8_t 	 _stateSlot;	

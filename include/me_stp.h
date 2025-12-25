@@ -1,5 +1,7 @@
 #pragma once
 
+#include <assert.h>
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -18,5 +20,5 @@ typedef struct bpdu {
     int cout;
 } bpdu;
 
-int stp(me_subNetwork *net);
+int me_stp(me_subNetwork *net);
 

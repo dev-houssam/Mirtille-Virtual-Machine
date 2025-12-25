@@ -16,7 +16,7 @@
 const char * compileTest(){return "gcc filename.c -lGL -lGLU -lglut";}
 
 void me_windows_openGL_loop() {
-    /*//Test
+    //Test
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glColor3f(1.0, 1.0, 1.0);
     glBegin(GL_TRIANGLES);
@@ -24,20 +24,23 @@ void me_windows_openGL_loop() {
         glVertex2f(0.5, -0.5);
         glVertex2f(0.0, 0.5);
     glEnd();
-    */
+    
 
 	//Use server to update display buffer
 	//me_updateDisplay(ME_Video* video, uint8_t pageServer);
 }
 
 void display() {
+	
     glClear(GL_COLOR_BUFFER_BIT);
-    rectangleGLTest();
+    me_windows_openGL_loop();
     glFlush();
+    
 }
 
-void me_init_video(ME_Video * video, struct ME_System * subStub){
-	video = (ME_Video *) malloc(sizeof(ME_Video));
+ME_Video * me_create_video(){
+	//assert(subStub != NULL);
+	ME_Video *  video = (ME_Video *) malloc(sizeof(ME_Video));
 	if(NULL == video){
 		perror("Cannot allocate video memory : me_init_video(ME_Video * video, ME_System * subStub)");
 		exit(EXIT_FAILURE);
@@ -50,10 +53,12 @@ void me_init_video(ME_Video * video, struct ME_System * subStub){
 	}
 	// We use system configuration to make setting for video
 	//subStub.setVideoState = ME_VIDEO_STATE_OK; // 1 for OK
+	return video;
 }
 
 void me_configuration_init_video(ME_Video * video) {
 
+	assert(video != NULL);
 	/*paletteIdRequested = NO_PALETTE_CHANGE_REQUESTED;
 
 	uint8_t* tmp = (uint8_t *)malloc(4 * VID_PAGE_SIZE);
@@ -73,17 +78,22 @@ void me_configuration_init_video(ME_Video * video) {
     glutCreateWindow("MirtilleVirtualMachine");
     glutDisplayFunc(display);
     glutMainLoop();
+}
 
+void * Screen(void * arg){
+	ME_Video* video = (ME_Video *) arg;
+	me_configuration_init_video(video);
 }
 
 void me_setDataBuffer(ME_Video * video, uint8_t *dataBuf, uint16_t offset) {
+	assert(video != NULL);
 	//dataBuf = dataBuf;
 	//pData.pc = dataBuf + offset;
 }
 
 
 void me_readAndDrawDesigner(ME_Video* video, uint8_t color, uint16_t zoom, const Designer *ds) {
-
+	assert(video != NULL);
 	/*uint8_t i = _pData.fetchByte();
 
 	//This is 
@@ -117,25 +127,27 @@ void me_readAndDrawDesigner(ME_Video* video, uint8_t color, uint16_t zoom, const
 }
 
 void me_fillDesigner(ME_Video* video, uint16_t color, uint16_t zoom, const Designer *pt){
-
+	assert(video != NULL);
 }
 
 void me_drawDesigner(ME_Video* video, uint8_t color, int16_t x, int16_t y){
-
+	assert(video != NULL);
 }
 
 
 void me_readAndDrawDesignerHierarchy(ME_Video * video, uint16_t zoom, const Designer *ds) {
-	
+	assert(video != NULL);
+	assert(ds != NULL);
 }
 
 uint8_t *me_getPage(ME_Video * video, uint8_t page) {
+	assert(video != NULL);
 	uint8_t *p;
 	return p;
 }
 
-void me_updateDisplay(ME_Video* video, uint8_t page) {
-
+/*void me_updateDisplay(ME_Video* video, uint8_t page) {
+	assert(video != NULL);*/
 	//debug(ME_DBG_VIDEO, "Video::me_updateDisplay(%d)", bufferFront1);
 /*
 	if (page != 0xFE) {
@@ -151,10 +163,11 @@ void me_updateDisplay(ME_Video* video, uint8_t page) {
 	//A: Because one byte gives two palette indices so
 	//   we only need to move 320/2 per line.
   //video->sys->updateDisplay(bufferFront1);
-}
+//}
 
 void me_saveOrLoad(ME_Video* video, ME_Serializer *ser) {
-
+	assert(video != NULL);
+	assert(ser != NULL);
 }
 
 static void * callback() {

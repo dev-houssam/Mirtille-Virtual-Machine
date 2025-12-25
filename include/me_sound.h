@@ -8,6 +8,8 @@
 //#include "me_portaudio.h"
 #include <portaudio.h>
 
+#include <assert.h>
+
 typedef struct {
 	int64_t sCallbackCount;
 	void *inputBuffer;

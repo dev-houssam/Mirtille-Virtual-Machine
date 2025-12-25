@@ -9,6 +9,7 @@
 #define __ME_MIRTILLE_VIRTUALMACHINE_H__
 
 #include <stdint.h>
+#include <assert.h>
 #include "me_video.h"
 #include "me_system.h"
 #include "me_sound.h"
@@ -52,6 +53,8 @@ typedef struct {
 
 Mirtille_VirtualMachine * create_VirtualMachine(ME_Video *vid, ME_System *stub);
 void me_configuration_init_VM(Mirtille_VirtualMachine * me);
+uint8_t fetchByteFromInstructionsSet(Instruction * instructionSet);
+uint16_t fetchWordFromInstructionsSet(Instruction * instructionSet);
 void me_op_mov(Mirtille_VirtualMachine *me);
 void me_op_add(Mirtille_VirtualMachine *me);
 void me_op_call(Mirtille_VirtualMachine *me);
@@ -62,7 +65,6 @@ void me_op_selectVideoPage(Mirtille_VirtualMachine *me);
 void me_op_fillVideoPage(Mirtille_VirtualMachine *me);
 void me_op_copyVideoPage(Mirtille_VirtualMachine *me);
 void me_op_blitFramebuffer(Mirtille_VirtualMachine *me);	
-void me_op_drawString(Mirtille_VirtualMachine *me);
 void me_op_sub(Mirtille_VirtualMachine *me);
 void me_op_and(Mirtille_VirtualMachine *me);
 void me_op_or(Mirtille_VirtualMachine *me);

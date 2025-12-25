@@ -233,7 +233,7 @@ int me_inoutRecording(ME_Sound * me_sound)
                     {
                         printf("-----------------------------------------------\n" );
                         printf("Configuration #%d\n", configIndex++ );
-                        err = TestConfiguration( config );
+                        //err = TestConfiguration( config );
                         /* Give user a chance to bail out. */
                         if( err == 1 )
                         {

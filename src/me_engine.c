@@ -1,26 +1,119 @@
 #include "../include/me_engine.h"
 #include "../include/me_system.h"
+#include <pthread.h>
 
+char * createTabChar(int size){
+	char * str = (char *) malloc(sizeof(char)  * size);
+	if(str == NULL) {
+		return NULL;
+	}
+	return str;
+}
+
+void StringCopy(char * dst, const char *src){
+	dst = createTabChar(strlen(src));
+	strcpy(dst, src);
+}
 
 Mirtille_Engine * me_create_MirtilleEngine(ME_System *paramSys, const char *dataDir, const char *saveDir){
 	Mirtille_Engine * me = (Mirtille_Engine *) malloc(sizeof(Mirtille_Engine));
-	if(me==NULL){
+	if(me == NULL){
 		return NULL;
 	}
 	me->sys 			 = paramSys;
-	me->vm 				 = create_VirtualMachine(&(me->video), me->sys);
-	me->_dataDir 	 = dataDir; 
-	me->_saveDir 	 = saveDir; 
+	printf("+++++++\n");
+	me->vm 				 = create_VirtualMachine(me->video, me->sys);
+	printf("++++++++--------------\n");
+	StringCopy(me->_dataDir, dataDir); 
+	StringCopy(me->_saveDir, saveDir); 
 	me->_stateSlot = 0;
+	printf("***************************--------------\n");
 	return me;
+}
+
+void me_configuration_init_engine(Mirtille_Engine * me){
+	//Initialisation de toutes les parties prenantes (Composant)
+	printf("void me_configuration_init_engine(Mirtille_Engine * me)\n");
+
+	//Video
+	me->video = me_create_video();
+	pthread_t screen_task;
+	pthread_create(&screen_task, NULL, Screen, (void *) me->video);
+	pthread_detach(screen_task);
+	//me_configuration_init_video(me->video);
+	printf("me->video = me_create_video();\n");
+
+}
+
+// pc+0|00000000.00000000.00000000.00000000|
+// pc+4|00000000.00000000.00000000.00000000|
+// pc+8|00000000.00000000.00000000.00000000|
+uint64_t fetch64bitsInstruction(Instruction * instructionSet){
+	return instructionSet->instr[instructionSet->pc++];
+}
+
+// OP  |00000000.xxxxxxxx.xxxxxxxx.xxxxxxxx|
+uint8_t fetch8bitsInstructionOp(uint64_t instruction){
+	
+	return 0;
+}
+
+// DST |00000000.00000000.xxxxxxxx.xxxxxxxx|
+uint8_t fetch8bitsInstructionDst(uint64_t instruction){
+	
+	return 0;
+}
+
+// DST |00000000.00000000.xxxxxxxx.xxxxxxxx|
+uint16_t fetch16bitsInstructionSrc(uint64_t instruction){
+	
+	return 0;
 }
 
 
 void me_run(Mirtille_Engine * me) {
-	/*while (!me->sys->input.quit) {
-		me_processInput(me);
+	printf("RUN\n");
+	me->vm->instructions.instr = (uint64_t * ) malloc(sizeof(uint64_t) * 100);
+	for(int i = 0; i < 100; i++){
+		me->vm->instructions.instr[i] = 0xFFFFFF & i; 
+	}
+	me->vm->instructions.pc = 0;
+	while (me->vm->instructions.pc < 100) {
+		uint64_t instruction = fetch64bitsInstruction(&me->vm->instructions);
+        uint8_t op 			 = fetch8bitsInstructionOp(instruction);
+        uint8_t dst 		 = fetch8bitsInstructionDst(instruction);
+        uint16_t src 		 = fetch16bitsInstructionSrc(instruction);
+        switch(op){
+        	case 0x00:
+        		me_op_mov(me->vm);
+				me_op_add(me->vm);
+				me_op_call(me->vm);
+				me_op_ret(me->vm);
+				me_op_jmp(me->vm);
+				me_op_jnz(me->vm);
+				me_op_selectVideoPage(me->vm);
+				me_op_fillVideoPage(me->vm);
+				me_op_copyVideoPage(me->vm);
+				me_op_blitFramebuffer(me->vm);	
+				
+				me_op_sub(me->vm);
+				me_op_and(me->vm);
+				me_op_or(me->vm);
+				me_op_shl(me->vm);
+				me_op_shr(me->vm);
+				me_op_updateMemList(me->vm);
+				me_inp_handleSpecialKeys(me->vm);
+				me_hostFrame(me->vm);
+        		break;
+
+        }
+		//me_processInput(me);
 		me_hostFrame(me->vm);
-	}*/
+		//Fetch Instruction
+		//VM :: Instruction instructions;
+		//uint8_t byteOp = fetchByteFromInstructionsSet(&me->vm->instructions);
+		printf("00 00 10 01 00 \n");
+	}
 }
 
 // void me_destroy_System(ME_System * me_system);
@@ -35,7 +128,6 @@ void me_configuration_init (Mirtille_Engine * me) {
 	me_init_System(me->sys, "Mirtille Virtual Machine");
 	me_configuration_init_video(me->video);
 	me_configuration_init_VM(me->vm);
-
 }
 
 

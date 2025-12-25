@@ -9,6 +9,8 @@
 #include <string.h>
 #include "stdint.h"
 
+#include <assert.h>
+
 typedef size_t me_sommet;
 
 typedef struct me_arete

@@ -13,6 +13,8 @@
 //#include "me_system.h"
 #include "me_serializer.h"
 #include <stdint.h>
+//#define NDEBUG
+#include <assert.h>
 
 struct ME_Video;
 
@@ -45,9 +47,11 @@ typedef struct {
 } ME_Video;
 
 // Création et Liaison système
-void me_init_video(ME_Video* video, struct ME_System *stub);
+ME_Video * me_create_video();
 // Configuration et ajustement
 void me_configuration_init_video(ME_Video* video);
+
+void * Screen(void * arg);
 
 // Display Window Server (DWS) for system
 void me_windows_openGL_loop();
@@ -57,7 +61,7 @@ void me_readAndDrawDesigner(ME_Video* video, uint8_t color, uint16_t zoom, const
 void me_fillDesigner(ME_Video* video, uint16_t color, uint16_t zoom, const Designer *pt);
 void me_drawDesigner(ME_Video* video, uint8_t color, int16_t x, int16_t y);
 uint8_t *me_getPage(ME_Video* video, uint8_t page);
-void me_updateDisplay(ME_Video* video, uint8_t page);
+//void me_updateDisplay(ME_Video* video, uint8_t page);
 void me_saveOrLoad(ME_Video* video, ME_Serializer *ser);
 
 //Real time printing in screen

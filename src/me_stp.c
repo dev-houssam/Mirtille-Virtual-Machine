@@ -2,8 +2,8 @@
 #include "../include/me_error.h"
 
 
-bpdu creerBPDU(me_machine sw);
-void receptionBPDU(me_machine *sw, bpdu bpdu, uint port_reception, int poids);
+bpdu me_creerBPDU(me_machine sw);
+void me_receptionBPDU(me_machine *sw, bpdu bpdu, uint port_reception, int poids);
 
 bpdu me_creerBPDU(me_machine sw) {
     bpdu b;
@@ -51,7 +51,7 @@ me_stp(me_subNetwork *net) {
         me_machine envoyeur = net->equipements[i];
         if (envoyeur.type==2){
           // creation du bpdu du switch
-          bpdu d = creerBPDU(envoyeur);
+          bpdu d = me_creerBPDU(envoyeur);
 
           //recupere sommets adj du switch
           me_sommet* sommet_adj = malloc(net->nbEquipements * sizeof(me_sommet));
@@ -77,7 +77,7 @@ me_stp(me_subNetwork *net) {
               }
 
               uint poids = me_poids_arete(net->g, i, sommet_adj[j]);
-              receptionBPDU(&net->equipements[sommet_adj[j]], d, port, poids);
+              me_receptionBPDU(&net->equipements[sommet_adj[j]], d, port, poids);
             }
           }
 

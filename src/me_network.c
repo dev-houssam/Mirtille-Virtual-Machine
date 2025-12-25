@@ -44,14 +44,14 @@ me_subNetwork* me_creation_reseau() {
     case 1:
       sscanf(line, "1;%[^;];%[^;];%d;%d", buffer_mac, buffer_ip, &nombre_ports,
              &priorite);
-      me_string_to_mac(buffer_mac, reseau->equipements[i].adr_mac);
-      me_string_to_ip(buffer_ip, &reseau->equipements[i].adr_ip);
+      //me_string_to_mac(buffer_mac, reseau->equipements[i].adr_mac);
+      //me_string_to_ip(buffer_ip, &reseau->equipements[i].adr_ip);
       reseau->equipements[i].id = i;
       break;
 
     case 2:
       sscanf(line, "2;%[^;];%d;%d", buffer_mac, &nombre_ports, &priorite);
-      me_string_to_mac(buffer_mac, reseau->equipements[i].adr_mac);
+      //me_string_to_mac(buffer_mac, reseau->equipements[i].adr_mac);
       reseau->equipements[i].nb_ports = nombre_ports;
       reseau->equipements[i].priorite = priorite;
       reseau->equipements[i].id = i;
@@ -165,19 +165,24 @@ char * me_ip_to_string(ME_IP_Network_Address_t nip){
   static char str[16];
   uint32_t ip = (nip.ip);
   sprintf(str, "%u.%u.%u.%u", (ip >> 24) & 0xFF, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF);
-  return str;
+  return (char *) str;
 }
 
 char * me_mac_to_string(const me_mac m) {
-  static char str[18];
+  //static char str[18];
+  char * str = (char *) malloc(sizeof(char)*18);
+  if(str == NULL){
+    return NULL;
+  }
+  memset(str, 0, 18);
   sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x", m[0], m[1], m[2], m[3], m[4], m[5]);
-  return str;
+  return (char *) str;
 }
 
 char * me_mac_to_string_hexa(const me_mac m) {
   static char str[18];
   sprintf(str, "%02x %02x %02x %02x %02x %02x", m[0], m[1], m[2], m[3], m[4], m[5]);
-  return str;
+  return (char *) str;
 }
 
 void me_afficher(me_subNetwork* reseau) {

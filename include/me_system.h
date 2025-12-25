@@ -2,7 +2,9 @@
 #define __ME_SYSTEM_H__
 
 #include "me_video.h"
-
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
 
 typedef enum {
 	OK
@@ -13,6 +15,7 @@ typedef struct
 	ME_VIDEO_SYSTEM_STATE_T setVideoState;
 } ME_System;
 
+ME_System * create_MirtilleSystem();
 
 void me_init_System(ME_System * me_system, const char * title);
 

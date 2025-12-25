@@ -8,6 +8,9 @@
 #ifndef __ME_DEBUG_H__
 #define __ME_DEBUG_H__
 
+#include <assert.h>
+
+
 typedef enum {
 	ME_DBG_NFM=0,
 	ME_DBG_VIDEO=1,
