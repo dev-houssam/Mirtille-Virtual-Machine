@@ -55,24 +55,30 @@ Mirtille_VirtualMachine * create_VirtualMachine(ME_Video *vid, ME_System *stub);
 void me_configuration_init_VM(Mirtille_VirtualMachine * me);
 uint8_t fetchByteFromInstructionsSet(Instruction * instructionSet);
 uint16_t fetchWordFromInstructionsSet(Instruction * instructionSet);
+
+//Instruction
 void me_op_mov(Mirtille_VirtualMachine *me);
 void me_op_add(Mirtille_VirtualMachine *me);
 void me_op_call(Mirtille_VirtualMachine *me);
 void me_op_ret(Mirtille_VirtualMachine *me);
 void me_op_jmp(Mirtille_VirtualMachine *me);
-void me_op_jnz(Mirtille_VirtualMachine *me);
-void me_op_selectVideoPage(Mirtille_VirtualMachine *me);
-void me_op_fillVideoPage(Mirtille_VirtualMachine *me);
-void me_op_copyVideoPage(Mirtille_VirtualMachine *me);
-void me_op_blitFramebuffer(Mirtille_VirtualMachine *me);	
+void me_op_jnz(Mirtille_VirtualMachine *me);	
 void me_op_sub(Mirtille_VirtualMachine *me);
 void me_op_and(Mirtille_VirtualMachine *me);
 void me_op_or(Mirtille_VirtualMachine *me);
 void me_op_shl(Mirtille_VirtualMachine *me);
 void me_op_shr(Mirtille_VirtualMachine *me);
+
+
+
 void me_op_updateMemList(Mirtille_VirtualMachine *me);
 void me_inp_handleSpecialKeys(Mirtille_VirtualMachine *me);
 void me_hostFrame(Mirtille_VirtualMachine *me);
+void me_op_selectVideoPage(Mirtille_VirtualMachine *me);
+void me_op_fillVideoPage(Mirtille_VirtualMachine *me);
+void me_op_copyVideoPage(Mirtille_VirtualMachine *me);
+void me_op_blitFramebuffer(Mirtille_VirtualMachine *me);
+
 
 enum ME_JMP_CONDITION { 
     ME_JZ=0, ME_JNZ=1, ME_JG=2, ME_JGE=3, ME_JL=4, ME_JLE=5
