@@ -69,6 +69,21 @@ uint16_t fetch16bitsInstructionSrc(uint64_t instruction){
 	return 32;
 }
 
+void fetchingStep(
+	uint64_t * instruction64, 
+	uint8_t  * operator,
+	uint8_t  * operand1,
+	uint32_t * operand2,
+	uint8_t  * operand3,
+	uint8_t	 * operand4
+	){
+	operator = NULL;
+	operand1 = NULL; 
+	operand2 = NULL;
+	operand3 = NULL;
+	operand4 = NULL;
+}
+
 void printX64Instruction(uint64_t instruction){
 	printf("OP=%ld op1=%ld op2=%ld func=%ld\n", instruction << 8, instruction << 16, instruction << 32, instruction << 42 );
 }

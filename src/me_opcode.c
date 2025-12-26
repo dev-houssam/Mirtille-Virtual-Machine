@@ -472,104 +472,436 @@ DEST[MAXVL-1:VL] :=0
 
 
 void me_op_aesdec128kl(Mirtille_VirtualMachine *me){
-//
+//AESDEC128KL — Perform Ten Rounds of AES Decryption Flow With Key Locker Using 128-BitKey
 /*
+Operation ¶
+AESDEC128KL ¶
+
+Handle := UnalignedLoad of 384 bit (SRC); // Load is not guaranteed to be atomic.
+Illegal Handle = (HandleReservedBitSet (Handle) ||
+                (Handle[0] AND (CPL > 0)) ||
+                Handle [2] ||
+                HandleKeyType (Handle) != HANDLE_KEY_TYPE_AES128);
+IF (Illegal Handle) {
+    THEN RFLAGS.ZF := 1;
+    ELSE
+        (UnwrappedKey, Authentic) := UnwrapKeyAndAuthenticate384 (Handle[383:0], IWKey);
+        IF (Authentic == 0)
+            THEN RFLAGS.ZF := 1;
+            ELSE
+                    DEST := AES128Decrypt (DEST, UnwrappedKey) ;
+                    RFLAGS.ZF := 0;
+        FI;
+FI;
+RFLAGS.OF, SF, AF, PF, CF := 0;
 
 */
 }
 
 
 void me_op_aesdec256kl(Mirtille_VirtualMachine *me){
-//
+//AESDEC256KL — Perform 14 Rounds of AES Decryption Flow With Key Locker Using 256-Bit Key
 /*
+Operation ¶
+AESDEC256KL ¶
+
+Handle := UnalignedLoad of 512 bit (SRC); // Load is not guaranteed to be atomic.
+Illegal Handle = (HandleReservedBitSet (Handle) ||
+                (Handle[0] AND (CPL > 0)) ||
+                Handle [2] ||
+                HandleKeyType (Handle) != HANDLE_KEY_TYPE_AES256);
+IF (Illegal Handle)
+    THEN RFLAGS.ZF := 1;
+    ELSE
+        (UnwrappedKey, Authentic) := UnwrapKeyAndAuthenticate512 (Handle[511:0], IWKey);
+        IF (Authentic == 0)
+            THEN RFLAGS.ZF := 1;
+            ELSE
+                    DEST := AES256Decrypt (DEST, UnwrappedKey) ;
+                    RFLAGS.ZF := 0;
+        FI;
+FI;
+RFLAGS.OF, SF, AF, PF, CF := 0;
 
 */
 }
 
 
 void me_op_aesdeclast(Mirtille_VirtualMachine *me){
-//
+//AESDECLAST — Perform Last Round of an AES Decryption Flow
 /*
+Operation ¶
+AESDECLAST ¶
+
+STATE := SRC1;
+RoundKey := SRC2;
+STATE := InvShiftRows( STATE );
+STATE := InvSubBytes( STATE );
+DEST[127:0] := STATE XOR RoundKey;
+DEST[MAXVL-1:128] (Unmodified)
+
+VAESDECLAST (128b and 256b VEX Encoded Versions) ¶
+
+(KL,VL) = (1,128), (2,256)
+FOR i = 0 to KL-1:
+    STATE := SRC1.xmm[i]
+    RoundKey := SRC2.xmm[i]
+    STATE := InvShiftRows( STATE )
+    STATE := InvSubBytes( STATE )
+    DEST.xmm[i] := STATE XOR RoundKey
+DEST[MAXVL-1:VL] := 0
+
+VAESDECLAST (EVEX Encoded Version) ¶
+
+(KL,VL) = (1,128), (2,256), (4,512)
+FOR i = 0 to KL-1:
+    STATE := SRC1.xmm[i]
+    RoundKey := SRC2.xmm[i]
+    STATE := InvShiftRows( STATE )
+    STATE := InvSubBytes( STATE )
+    DEST.xmm[i] := STATE XOR RoundKey
+DEST[MAXVL-1:VL] := 0
 
 */
 }
 
 
 void me_op_aesdecwide128kl(Mirtille_VirtualMachine *me){
-//
+//AESDECWIDE128KL — Perform Ten Rounds of AES Decryption Flow With Key Locker on 8 BlocksUsing 128-Bit Key
 /*
+Operation ¶
+AESDECWIDE128KL ¶
+
+Handle := UnalignedLoad of 384 bit (SRC); // Load is not guaranteed to be atomic.
+Illegal Handle = (HandleReservedBitSet (Handle) ||
+                (Handle[0] AND (CPL > 0)) ||
+                Handle [2] ||
+                HandleKeyType (Handle) != HANDLE_KEY_TYPE_AES128);
+IF (Illegal Handle)
+    THEN RFLAGS.ZF := 1;
+    ELSE
+        (UnwrappedKey, Authentic) := UnwrapKeyAndAuthenticate384 (Handle[383:0], IWKey);
+        IF Authentic == 0 {
+            THEN RFLAGS.ZF := 1;
+            ELSE
+                    XMM0 := AES128Decrypt (XMM0, UnwrappedKey) ;
+                    XMM1 := AES128Decrypt (XMM1, UnwrappedKey) ;
+                    XMM2 := AES128Decrypt (XMM2, UnwrappedKey) ;
+                    XMM3 := AES128Decrypt (XMM3, UnwrappedKey) ;
+                    XMM4 := AES128Decrypt (XMM4, UnwrappedKey) ;
+                    XMM5 := AES128Decrypt (XMM5, UnwrappedKey) ;
+                    XMM6 := AES128Decrypt (XMM6, UnwrappedKey) ;
+                    XMM7 := AES128Decrypt (XMM7, UnwrappedKey) ;
+                    RFLAGS.ZF := 0;
+        FI;
+FI;
+RFLAGS.OF, SF, AF, PF, CF := 0;
 
 */
 }
 
 
 void me_op_aesdecwide256kl(Mirtille_VirtualMachine *me){
-//
+//AESDECWIDE256KL — Perform 14 Rounds of AES Decryption Flow With Key Locker on 8 BlocksUsing 256-Bit Key
 /*
+Operation ¶
+AESDECWIDE256KL ¶
+
+Handle := UnalignedLoad of 512 bit (SRC); // Load is not guaranteed to be atomic.
+Illegal Handle = (HandleReservedBitSet (Handle) ||
+                (Handle[0] AND (CPL > 0)) ||
+                Handle [2] ||
+                HandleKeyType (Handle) != HANDLE_KEY_TYPE_AES256);
+IF (Illegal Handle) {
+    THEN RFLAGS.ZF := 1;
+    ELSE
+        (UnwrappedKey, Authentic) := UnwrapKeyAndAuthenticate512 (Handle[511:0], IWKey);
+        IF (Authentic == 0)
+            THEN RFLAGS.ZF := 1;
+            ELSE
+                XMM0 := AES256Decrypt (XMM0, UnwrappedKey) ;
+                XMM1 := AES256Decrypt (XMM1, UnwrappedKey) ;
+                XMM2 := AES256Decrypt (XMM2, UnwrappedKey) ;
+                XMM3 := AES256Decrypt (XMM3, UnwrappedKey) ;
+                XMM4 := AES256Decrypt (XMM4, UnwrappedKey) ;
+                XMM5 := AES256Decrypt (XMM5, UnwrappedKey) ;
+                XMM6 := AES256Decrypt (XMM6, UnwrappedKey) ;
+                XMM7 := AES256Decrypt (XMM7, UnwrappedKey) ;
+                RFLAGS.ZF := 0;
+        FI;
+FI;
+RFLAGS.OF, SF, AF, PF, CF := 0;
 
 */
 }
 
 
 void me_op_aesenc(Mirtille_VirtualMachine *me){
-//
+//AESENC — Perform One Round of an AES Encryption Flow
 /*
+    Operation ¶
+AESENC ¶
+
+STATE := SRC1;
+RoundKey := SRC2;
+STATE := ShiftRows( STATE );
+STATE := SubBytes( STATE );
+STATE := MixColumns( STATE );
+DEST[127:0] := STATE XOR RoundKey;
+DEST[MAXVL-1:128] (Unmodified)
+
+VAESENC (128b and 256b VEX Encoded Versions) ¶
+
+(KL,VL) = (1,128), (2,256)
+FOR I := 0 to KL-1:
+    STATE := SRC1.xmm[i]
+    RoundKey := SRC2.xmm[i]
+    STATE := ShiftRows( STATE )
+    STATE := SubBytes( STATE )
+    STATE := MixColumns( STATE )
+    DEST.xmm[i] := STATE XOR RoundKey
+DEST[MAXVL-1:VL] := 0
+
+VAESENC (EVEX Encoded Version) ¶
+
+(KL,VL) = (1,128), (2,256), (4,512)
+FOR i := 0 to KL-1:
+    STATE := SRC1.xmm[i] // xmm[i] is the i’th xmm word in the SIMD register
+    RoundKey := SRC2.xmm[i]
+    STATE := ShiftRows( STATE )
+    STATE := SubBytes( STATE )
+    STATE := MixColumns( STATE )
+    DEST.xmm[i] := STATE XOR RoundKey
+DEST[MAXVL-1:VL] := 0
 
 */
 }
 
 
 void me_op_aesenc128kl(Mirtille_VirtualMachine *me){
-//
+//AESENC128KL — Perform Ten Rounds of AES Encryption Flow With Key Locker Using 128-Bit Key
 /*
+Operation ¶
+AESENC128KL ¶
+
+Handle := UnalignedLoad of 384 bit (SRC); // Load is not guaranteed to be atomic.
+Illegal Handle = (
+                HandleReservedBitSet (Handle) ||
+                (Handle[0] AND (CPL > 0)) ||
+                Handle [1] ||
+                HandleKeyType (Handle) != HANDLE_KEY_TYPE_AES128
+                );
+IF (Illegal Handle) {
+    THEN RFLAGS.ZF := 1;
+    ELSE
+        (UnwrappedKey, Authentic) := UnwrapKeyAndAuthenticate384 (Handle[383:0], IWKey);
+        IF (Authentic == 0)
+        THEN RFLAGS.ZF := 1;
+        ELSE
+            DEST := AES128Encrypt (DEST, UnwrappedKey) ;
+            RFLAGS.ZF := 0;
+        FI;
+FI;
+RFLAGS.OF, SF, AF, PF, CF := 0;
 
 */
 }
 
 
 void me_op_aesenc256kl(Mirtille_VirtualMachine *me){
-//
+//AESENC256KL — Perform 14 Rounds of AES Encryption Flow With Key Locker Using 256-Bit Key
 /*
+Operation ¶
+AESENC256KL ¶
+
+Handle := UnalignedLoad of 512 bit (SRC); // Load is not guaranteed to be atomic.
+Illegal Handle = (
+                HandleReservedBitSet (Handle) ||
+                (Handle[0] AND (CPL > 0)) ||
+                Handle [1] ||
+                HandleKeyType (Handle) != HANDLE_KEY_TYPE_AES256
+                );
+IF (Illegal Handle)
+    THEN RFLAGS.ZF := 1;
+    ELSE
+        (UnwrappedKey, Authentic) := UnwrapKeyAndAuthenticate512 (Handle[511:0], IWKey);
+        IF (Authentic == 0)
+            THEN RFLAGS.ZF := 1;
+            ELSE
+                    DEST := AES256Encrypt (DEST, UnwrappedKey) ;
+                    RFLAGS.ZF := 0;
+        FI;
+FI;
+RFLAGS.OF, SF, AF, PF, CF := 0;
 
 */
 }
 
 
 void me_op_aesenclast(Mirtille_VirtualMachine *me){
-//
+//AESENCLAST — Perform Last Round of an AES Encryption Flow
 /*
+Operation ¶
+AESENCLAST ¶
+
+STATE := SRC1;
+RoundKey := SRC2;
+STATE := ShiftRows( STATE );
+STATE := SubBytes( STATE );
+DEST[127:0] := STATE XOR RoundKey;
+DEST[MAXVL-1:128] (Unmodified)
+
+VAESENCLAST (128b and 256b VEX Encoded Versions) ¶
+
+(KL, VL) = (1,128), (2,256)
+FOR I=0 to KL-1:
+    STATE := SRC1.xmm[i]
+    RoundKey := SRC2.xmm[i]
+    STATE := ShiftRows( STATE )
+    STATE := SubBytes( STATE )
+    DEST.xmm[i] := STATE XOR RoundKey
+DEST[MAXVL-1:VL] := 0
+
+VAESENCLAST (EVEX Encoded Version) ¶
+
+(KL,VL) = (1,128), (2,256), (4,512)
+FOR i = 0 to KL-1:
+    STATE := SRC1.xmm[i]
+    RoundKey := SRC2.xmm[i]
+    STATE := ShiftRows( STATE )
+    STATE := SubBytes( STATE )
+    DEST.xmm[i] := STATE XOR RoundKey
+DEST[MAXVL-1:VL] := 0
 
 */
 }
 
 
 void me_op_aesencwide128kl(Mirtille_VirtualMachine *me){
-//
+//AESENCWIDE128KL — Perform Ten Rounds of AES Encryption Flow With Key Locker on 8 BlocksUsing 128-Bit Key
 /*
+Operation ¶
+AESENCWIDE128KL ¶
 
+Handle := UnalignedLoad of 384 bit (SRC); // Load is not guaranteed to be atomic.
+Illegal Handle = (
+                HandleReservedBitSet (Handle) ||
+                (Handle[0] AND (CPL > 0)) ||
+                Handle [1] ||
+                HandleKeyType (Handle) != HANDLE_KEY_TYPE_AES128
+                );
+IF (Illegal Handle)
+    THEN RFLAGS.ZF := 1;
+    ELSE
+        (UnwrappedKey, Authentic) := UnwrapKeyAndAuthenticate384 (Handle[383:0], IWKey);
+        IF Authentic == 0
+            THEN RFLAGS.ZF := 1;
+            ELSE
+            XMM0 := AES128Encrypt (XMM0, UnwrappedKey) ;
+                    XMM1 := AES128Encrypt (XMM1, UnwrappedKey) ;
+                    XMM2 := AES128Encrypt (XMM2, UnwrappedKey) ;
+                    XMM3 := AES128Encrypt (XMM3, UnwrappedKey) ;
+                    XMM4 := AES128Encrypt (XMM4, UnwrappedKey) ;
+                    XMM5 := AES128Encrypt (XMM5, UnwrappedKey) ;
+                    XMM6 := AES128Encrypt (XMM6, UnwrappedKey) ;
+                    XMM7 := AES128Encrypt (XMM7, UnwrappedKey) ;
+                    RFLAGS.ZF := 0;
+        FI;
+FI;
+RFLAGS.OF, SF, AF, PF, CF := 0;
+1. Further details on Key Locker and usage of this instruction can be found here:
+
+https://software.intel.com/content/www/us/en/develop/download/intel-key-locker-specification.html. ¶ 
 */
 }
 
 
 void me_op_aesencwide256kl(Mirtille_VirtualMachine *me){
-//
+//AESENCWIDE256KL — Perform 14 Rounds of AES Encryption Flow With Key Locker on 8 BlocksUsing 256-Bit Key
 /*
+Operation ¶
+AESENCWIDE256KL ¶
 
+Handle := UnalignedLoad of 512 bit (SRC); // Load is not guaranteed to be atomic.
+Illegal Handle = (
+                HandleReservedBitSet (Handle) ||
+                (Handle[0] AND (CPL > 0)) ||
+                Handle [1] ||
+                HandleKeyType (Handle) != HANDLE_KEY_TYPE_AES256
+                );
+IF (Illegal Handle)
+    THEN RFLAGS.ZF := 1;
+    ELSE
+        (UnwrappedKey, Authentic) := UnwrapKeyAndAuthenticate512 (Handle[511:0], IWKey);
+        IF (Authentic == 0)
+            THEN RFLAGS.ZF := 1;
+            ELSE
+                    XMM0 := AES256Encrypt (XMM0, UnwrappedKey) ;
+                    XMM1 := AES256Encrypt (XMM1, UnwrappedKey) ;
+                    XMM2 := AES256Encrypt (XMM2, UnwrappedKey) ;
+                    XMM3 := AES256Encrypt (XMM3, UnwrappedKey) ;
+                    XMM4 := AES256Encrypt (XMM4, UnwrappedKey) ;
+                    XMM5 := AES256Encrypt (XMM5, UnwrappedKey) ;
+                    XMM6 := AES256Encrypt (XMM6, UnwrappedKey) ;
+                    XMM7 := AES256Encrypt (XMM7, UnwrappedKey) ;
+                    RFLAGS.ZF := 0;
+        FI;
+FI;
+RFLAGS.OF, SF, AF, PF, CF := 0;
+1. Further details on Key Locker and usage of this instruction can be found here:
+
+https://software.intel.com/content/www/us/en/develop/download/intel-key-locker-specification.html. ¶ 
 */
 }
 
 
 void me_op_aesimc(Mirtille_VirtualMachine *me){
-//
+//AESIMC — Perform the AES InvMixColumn Transformation
 /*
+Operation ¶
+AESIMC ¶
+
+DEST[127:0] := InvMixColumns( SRC );
+DEST[MAXVL-1:128] (Unmodified)
+
+VAESIMC ¶
+
+DEST[127:0] := InvMixColumns( SRC );
+DEST[MAXVL-1:128] := 0;
 
 */
 }
 
 
 void me_op_aeskeygenassist(Mirtille_VirtualMachine *me){
-//
+//AESKEYGENASSIST — AES Round Key Generation Assist
 /*
+Operation ¶
+AESKEYGENASSIST ¶
+
+X3[31:0] := SRC [127: 96];
+X2[31:0] := SRC [95: 64];
+X1[31:0] := SRC [63: 32];
+X0[31:0] := SRC [31: 0];
+RCON[31:0] := ZeroExtend(imm8[7:0]);
+DEST[31:0] := SubWord(X1);
+DEST[63:32 ] := RotWord( SubWord(X1) ) XOR RCON;
+DEST[95:64] := SubWord(X3);
+DEST[127:96] := RotWord( SubWord(X3) ) XOR RCON;
+DEST[MAXVL-1:128] (Unmodified)
+
+VAESKEYGENASSIST ¶
+
+X3[31:0] := SRC [127: 96];
+X2[31:0] := SRC [95: 64];
+X1[31:0] := SRC [63: 32];
+X0[31:0] := SRC [31: 0];
+RCON[31:0] := ZeroExtend(imm8[7:0]);
+DEST[31:0] := SubWord(X1);
+DEST[63:32 ] := RotWord( SubWord(X1) ) XOR RCON;
+DEST[95:64] := SubWord(X3);
+DEST[127:96] := RotWord( SubWord(X3) ) XOR RCON;
+DEST[MAXVL-1:128] := 0;
 
 */
 }
@@ -650,56 +982,290 @@ DEST[MAXVL-1:128] (Unmodified)
 
 
 void me_op_andnps(Mirtille_VirtualMachine *me){
-//
+//ANDNPS — Bitwise Logical AND NOT of Packed Single Precision Floating-Point Values
 /*
+Operation ¶
+VANDNPS (EVEX Encoded Versions) ¶
+
+(KL, VL) = (4, 128), (8, 256), (16, 512)
+FOR j := 0 TO KL-1
+    i := j * 32
+    IF k1[j] OR *no writemask*
+            IF (EVEX.b == 1) AND (SRC2 *is memory*)
+                THEN
+                    DEST[i+31:i] := (NOT(SRC1[i+31:i])) BITWISE AND SRC2[31:0]
+                ELSE
+                    DEST[i+31:i] := (NOT(SRC1[i+31:i])) BITWISE AND SRC2[i+31:i]
+            FI;
+        ELSE
+            IF *merging-masking* ; merging-masking
+                THEN *DEST[i+31:i] remains unchanged*
+                ELSE ; zeroing-masking
+                    DEST[i+31:i] = 0
+            FI;
+    FI;
+ENDFOR
+DEST[MAXVL-1:VL] := 0
+
+VANDNPS (VEX.256 Encoded Version) ¶
+
+DEST[31:0] := (NOT(SRC1[31:0])) BITWISE AND SRC2[31:0]
+DEST[63:32] := (NOT(SRC1[63:32])) BITWISE AND SRC2[63:32]
+DEST[95:64] := (NOT(SRC1[95:64])) BITWISE AND SRC2[95:64]
+DEST[127:96] := (NOT(SRC1[127:96])) BITWISE AND SRC2[127:96]
+DEST[159:128] := (NOT(SRC1[159:128])) BITWISE AND SRC2[159:128]
+DEST[191:160] := (NOT(SRC1[191:160])) BITWISE AND SRC2[191:160]
+DEST[223:192] := (NOT(SRC1[223:192])) BITWISE AND SRC2[223:192]
+DEST[255:224] := (NOT(SRC1[255:224])) BITWISE AND SRC2[255:224].
+DEST[MAXVL-1:256] := 0
+
+VANDNPS (VEX.128 Encoded Version) ¶
+
+DEST[31:0] := (NOT(SRC1[31:0])) BITWISE AND SRC2[31:0]
+DEST[63:32] := (NOT(SRC1[63:32])) BITWISE AND SRC2[63:32]
+DEST[95:64] := (NOT(SRC1[95:64])) BITWISE AND SRC2[95:64]
+DEST[127:96] := (NOT(SRC1[127:96])) BITWISE AND SRC2[127:96]
+DEST[MAXVL-1:128] := 0
+
+ANDNPS (128-bit Legacy SSE Version) ¶
+
+DEST[31:0] := (NOT(DEST[31:0])) BITWISE AND SRC[31:0]
+DEST[63:32] := (NOT(DEST[63:32])) BITWISE AND SRC[63:32]
+DEST[95:64] := (NOT(DEST[95:64])) BITWISE AND SRC[95:64]
+DEST[127:96] := (NOT(DEST[127:96])) BITWISE AND SRC[127:96]
+DEST[MAXVL-1:128] (Unmodified)
 
 */
 }
 
 
 void me_op_andpd(Mirtille_VirtualMachine *me){
-//
+//ANDPD — Bitwise Logical AND of Packed Double Precision Floating-Point Values
 /*
+Operation ¶
+VANDPD (EVEX Encoded Versions) ¶
+
+(KL, VL) = (2, 128), (4, 256), (8, 512)
+FOR j := 0 TO KL-1
+    i := j * 64
+    IF k1[j] OR *no writemask*
+        THEN
+            IF (EVEX.b == 1) AND (SRC2 *is memory*)
+                THEN
+                    DEST[i+63:i] := SRC1[i+63:i] BITWISE AND SRC2[63:0]
+                ELSE
+                    DEST[i+63:i] := SRC1[i+63:i] BITWISE AND SRC2[i+63:i]
+            FI;
+        ELSE
+            IF *merging-masking* ; merging-masking
+                THEN *DEST[i+63:i] remains unchanged*
+                ELSE ; zeroing-masking
+                    DEST[i+63:i] = 0
+            FI;
+    FI;
+ENDFOR
+DEST[MAXVL-1:VL] := 0
+
+VANDPD (VEX.256 Encoded Version) ¶
+
+DEST[63:0] := SRC1[63:0] BITWISE AND SRC2[63:0]
+DEST[127:64] := SRC1[127:64] BITWISE AND SRC2[127:64]
+DEST[191:128] := SRC1[191:128] BITWISE AND SRC2[191:128]
+DEST[255:192] := SRC1[255:192] BITWISE AND SRC2[255:192]
+DEST[MAXVL-1:256] := 0
+
+VANDPD (VEX.128 Encoded Version) ¶
+
+DEST[63:0] := SRC1[63:0] BITWISE AND SRC2[63:0]
+DEST[127:64] := SRC1[127:64] BITWISE AND SRC2[127:64]
+DEST[MAXVL-1:128] := 0
+
+ANDPD (128-bit Legacy SSE Version) ¶
+
+DEST[63:0] := DEST[63:0] BITWISE AND SRC[63:0]
+DEST[127:64] := DEST[127:64] BITWISE AND SRC[127:64]
+DEST[MAXVL-1:128] (Unmodified)
 
 */
 }
 
 
 void me_op_andps(Mirtille_VirtualMachine *me){
-//
+//ANDPS — Bitwise Logical AND of Packed Single Precision Floating-Point Values
 /*
+Operation ¶
+VANDPS (EVEX Encoded Versions) ¶
+
+(KL, VL) = (4, 128), (8, 256), (16, 512)
+FOR j := 0 TO KL-1
+    i := j * 32
+    IF k1[j] OR *no writemask*
+            IF (EVEX.b == 1) AND (SRC2 *is memory*)
+                THEN
+                    DEST[i+63:i] := SRC1[i+31:i] BITWISE AND SRC2[31:0]
+                ELSE
+                    DEST[i+31:i] := SRC1[i+31:i] BITWISE AND SRC2[i+31:i]
+            FI;
+        ELSE
+            IF *merging-masking* ; merging-masking
+                THEN *DEST[i+31:i] remains unchanged*
+                ELSE ; zeroing-masking
+                    DEST[i+31:i] := 0
+            FI;
+    FI;
+ENDFOR
+DEST[MAXVL-1:VL] := 0;
+
+VANDPS (VEX.256 Encoded Version) ¶
+
+DEST[31:0] := SRC1[31:0] BITWISE AND SRC2[31:0]
+DEST[63:32] := SRC1[63:32] BITWISE AND SRC2[63:32]
+DEST[95:64] := SRC1[95:64] BITWISE AND SRC2[95:64]
+DEST[127:96] := SRC1[127:96] BITWISE AND SRC2[127:96]
+DEST[159:128] := SRC1[159:128] BITWISE AND SRC2[159:128]
+DEST[191:160] := SRC1[191:160] BITWISE AND SRC2[191:160]
+DEST[223:192] := SRC1[223:192] BITWISE AND SRC2[223:192]
+DEST[255:224] := SRC1[255:224] BITWISE AND SRC2[255:224].
+DEST[MAXVL-1:256] := 0;
+
+VANDPS (VEX.128 Encoded Version) ¶
+
+DEST[31:0] := SRC1[31:0] BITWISE AND SRC2[31:0]
+DEST[63:32] := SRC1[63:32] BITWISE AND SRC2[63:32]
+DEST[95:64] := SRC1[95:64] BITWISE AND SRC2[95:64]
+DEST[127:96] := SRC1[127:96] BITWISE AND SRC2[127:96]
+DEST[MAXVL-1:128] := 0;
+
+ANDPS (128-bit Legacy SSE Version) ¶
+
+DEST[31:0] := DEST[31:0] BITWISE AND SRC[31:0]
+DEST[63:32] := DEST[63:32] BITWISE AND SRC[63:32]
+DEST[95:64] := DEST[95:64] BITWISE AND SRC[95:64]
+DEST[127:96] := DEST[127:96] BITWISE AND SRC[127:96]
+DEST[MAXVL-1:128] (Unmodified)
 
 */
 }
 
 
 void me_op_arpl(Mirtille_VirtualMachine *me){
-//
+//ARPL — Adjust RPL Field of Segment Selector
 /*
+    Operation ¶
+
+IF 64-BIT MODE
+    THEN
+        See MOVSXD;
+    ELSE
+        IF DEST[RPL] < SRC[RPL]
+            THEN
+                ZF := 1;
+                DEST[RPL] := SRC[RPL];
+            ELSE
+                ZF := 0;
+        FI;
+FI;
 
 */
 }
 
 
 void me_op_bextr(Mirtille_VirtualMachine *me){
-//
+//BEXTR — Bit Field Extract
 /*
+Operation ¶
+
+START := SRC2[7:0];
+LEN := SRC2[15:8];
+TEMP := ZERO_EXTEND_TO_512 (SRC1 );
+DEST := ZERO_EXTEND(TEMP[START+LEN -1: START]);
+ZF := (DEST = 0);
 
 */
 }
 
 
 void me_op_blendpd(Mirtille_VirtualMachine *me){
-//
+//BLENDPD — Blend Packed Double Precision Floating-Point Values
 /*
+Operation ¶
+BLENDPD (128-bit Legacy SSE Version) ¶
+
+IF (IMM8[0] = 0)THEN DEST[63:0] := DEST[63:0]
+    ELSE DEST [63:0] := SRC[63:0] FI
+IF (IMM8[1] = 0) THEN DEST[127:64] := DEST[127:64]
+    ELSE DEST [127:64] := SRC[127:64] FI
+DEST[MAXVL-1:128] (Unmodified)
+
+VBLENDPD (VEX.128 Encoded Version) ¶
+
+IF (IMM8[0] = 0)THEN DEST[63:0] := SRC1[63:0]
+    ELSE DEST [63:0] := SRC2[63:0] FI
+IF (IMM8[1] = 0) THEN DEST[127:64] := SRC1[127:64]
+    ELSE DEST [127:64] := SRC2[127:64] FI
+DEST[MAXVL-1:128] := 0
+
+VBLENDPD (VEX.256 Encoded Version) ¶
+
+IF (IMM8[0] = 0)THEN DEST[63:0] := SRC1[63:0]
+    ELSE DEST [63:0] := SRC2[63:0] FI
+IF (IMM8[1] = 0) THEN DEST[127:64] := SRC1[127:64]
+    ELSE DEST [127:64] := SRC2[127:64] FI
+IF (IMM8[2] = 0) THEN DEST[191:128] := SRC1[191:128]
+    ELSE DEST [191:128] := SRC2[191:128] FI
+IF (IMM8[3] = 0) THEN DEST[255:192] := SRC1[255:192]
+    ELSE DEST [255:192] := SRC2[255:192] FI
 
 */
 }
 
 
 void me_op_blendps(Mirtille_VirtualMachine *me){
-//
+//BLENDPS — Blend Packed Single Precision Floating-Point Values
 /*
+Operation ¶
+BLENDPS (128-bit Legacy SSE Version) ¶
+
+IF (IMM8[0] = 0) THEN DEST[31:0] :=DEST[31:0]
+    ELSE DEST [31:0] := SRC[31:0] FI
+IF (IMM8[1] = 0) THEN DEST[63:32] := DEST[63:32]
+    ELSE DEST [63:32] := SRC[63:32] FI
+IF (IMM8[2] = 0) THEN DEST[95:64] := DEST[95:64]
+    ELSE DEST [95:64] := SRC[95:64] FI
+IF (IMM8[3] = 0) THEN DEST[127:96] := DEST[127:96]
+    ELSE DEST [127:96] := SRC[127:96] FI
+DEST[MAXVL-1:128] (Unmodified)
+
+VBLENDPS (VEX.128 Encoded Version) ¶
+
+IF (IMM8[0] = 0) THEN DEST[31:0] :=SRC1[31:0]
+    ELSE DEST [31:0] := SRC2[31:0] FI
+IF (IMM8[1] = 0) THEN DEST[63:32] := SRC1[63:32]
+    ELSE DEST [63:32] := SRC2[63:32] FI
+IF (IMM8[2] = 0) THEN DEST[95:64] := SRC1[95:64]
+    ELSE DEST [95:64] := SRC2[95:64] FI
+IF (IMM8[3] = 0) THEN DEST[127:96] := SRC1[127:96]
+    ELSE DEST [127:96] := SRC2[127:96] FI
+DEST[MAXVL-1:128] := 0
+
+VBLENDPS (VEX.256 Encoded Version) ¶
+
+IF (IMM8[0] = 0) THEN DEST[31:0] :=SRC1[31:0]
+    ELSE DEST [31:0] := SRC2[31:0] FI
+IF (IMM8[1] = 0) THEN DEST[63:32] := SRC1[63:32]
+    ELSE DEST [63:32] := SRC2[63:32] FI
+IF (IMM8[2] = 0) THEN DEST[95:64] := SRC1[95:64]
+    ELSE DEST [95:64] := SRC2[95:64] FI
+IF (IMM8[3] = 0) THEN DEST[127:96] := SRC1[127:96]
+    ELSE DEST [127:96] := SRC2[127:96] FI
+IF (IMM8[4] = 0) THEN DEST[159:128] := SRC1[159:128]
+    ELSE DEST [159:128] := SRC2[159:128] FI
+IF (IMM8[5] = 0) THEN DEST[191:160] := SRC1[191:160]
+    ELSE DEST [191:160] := SRC2[191:160] FI
+IF (IMM8[6] = 0) THEN DEST[223:192] := SRC1[223:192]
+    ELSE DEST [223:192] := SRC2[223:192] FI
+IF (IMM8[7] = 0) THEN DEST[255:224] := SRC1[255:224]
+    ELSE DEST [255:224] := SRC2[255:224] FI.
 
 */
 }
@@ -722,8 +1288,19 @@ void me_op_blendvps(Mirtille_VirtualMachine *me){
 
 
 void me_op_blsi(Mirtille_VirtualMachine *me){
-//
+//BLSI — Extract Lowest Set Isolated Bit
 /*
+Operation ¶
+
+temp := (-SRC) bitwiseAND (SRC);
+SF := temp[OperandSize -1];
+ZF := (temp = 0);
+IF SRC = 0
+    CF := 0;
+ELSE
+    CF := 1;
+FI
+DEST := temp;
 
 */
 }
@@ -818,8 +1395,23 @@ void me_op_bsf(Mirtille_VirtualMachine *me){
 
 
 void me_op_bsr(Mirtille_VirtualMachine *me){
-//
+//BSR — Bit Scan Reverse
 /*
+Operation ¶
+
+IF SRC = 0
+    THEN
+        ZF := 1;
+        DEST is undefined;
+    ELSE
+        ZF := 0;
+        temp := OperandSize – 1;
+        WHILE Bit(SRC, temp) = 0
+        DO
+            temp := temp - 1;
+        OD;
+        DEST := temp;
+FI;
 
 */
 }
@@ -834,8 +1426,11 @@ void me_op_bswap(Mirtille_VirtualMachine *me){
 
 
 void me_op_bt(Mirtille_VirtualMachine *me){
-//
+//BT — Bit Test
 /*
+Operation ¶
+
+CF := Bit(BitBase, BitOffset);
 
 */
 }
@@ -1470,8 +2065,22 @@ void me_op_clflushopt(Mirtille_VirtualMachine *me){
 
 
 void me_op_cli(Mirtille_VirtualMachine *me){
-//
+//CLI — Clear Interrupt Flag
 /*
+Operation ¶
+
+IF CR0.PE = 0
+    THEN IF := 0; (* Reset Interrupt Flag *)
+    ELSE
+        IF IOPL ≥ CPL (* CPL = 3 if EFLAGS.VM = 1 *)
+            THEN IF := 0; (* Reset Interrupt Flag *)
+            ELSE
+                IF VME mode OR PVI mode
+                    THEN VIF := 0; (* Reset Virtual Interrupt Flag *)
+                    ELSE #GP(0);
+                FI;
+        FI;
+FI;
 
 */
 }
@@ -1539,64 +2148,751 @@ ModifyStatusFlags; (* Modify status flags in the same manner as the SUB instruct
 
 
 void me_op_cmppd(Mirtille_VirtualMachine *me){
-//
+//CMPPD — Compare Packed Double Precision Floating-Point Values
 /*
+Operation ¶
+
+CASE (COMPARISON PREDICATE) OF
+0: OP3 := EQ_OQ; OP5 := EQ_OQ;
+    1: OP3 := LT_OS; OP5 := LT_OS;
+    2: OP3 := LE_OS; OP5 := LE_OS;
+    3: OP3 := UNORD_Q; OP5 := UNORD_Q;
+    4: OP3 := NEQ_UQ; OP5 := NEQ_UQ;
+    5: OP3 := NLT_US; OP5 := NLT_US;
+    6: OP3 := NLE_US; OP5 := NLE_US;
+    7: OP3 := ORD_Q; OP5 := ORD_Q;
+    8: OP5 := EQ_UQ;
+    9: OP5 := NGE_US;
+    10: OP5 := NGT_US;
+    11: OP5 := FALSE_OQ;
+    12: OP5 := NEQ_OQ;
+    13: OP5 := GE_OS;
+    14: OP5 := GT_OS;
+    15: OP5 := TRUE_UQ;
+    16: OP5 := EQ_OS;
+    17: OP5 := LT_OQ;
+    18: OP5 := LE_OQ;
+    19: OP5 := UNORD_S;
+    20: OP5 := NEQ_US;
+    21: OP5 := NLT_UQ;
+    22: OP5 := NLE_UQ;
+    23: OP5 := ORD_S;
+    24: OP5 := EQ_US;
+    25: OP5 := NGE_UQ;
+    26: OP5 := NGT_UQ;
+    27: OP5 := FALSE_OS;
+    28: OP5 := NEQ_OS;
+    29: OP5 := GE_OQ;
+    30: OP5 := GT_OQ;
+    31: OP5 := TRUE_US;
+    DEFAULT: Reserved;
+ESAC;
+
+VCMPPD (EVEX Encoded Versions) ¶
+
+(KL, VL) = (2, 128), (4, 256), (8, 512)
+FOR j := 0 TO KL-1
+    i := j * 64
+    IF k2[j] OR *no writemask*
+        THEN
+            IF (EVEX.b = 1) AND (SRC2 *is memory*)
+                THEN
+                    CMP := SRC1[i+63:i] OP5 SRC2[63:0]
+                ELSE
+                    CMP := SRC1[i+63:i] OP5 SRC2[i+63:i]
+            FI;
+            IF CMP = TRUE
+                THEN DEST[j] := 1;
+                ELSE DEST[j] := 0; FI;
+        ELSE DEST[j] := 0
+                        ; zeroing-masking only
+    FI;
+ENDFOR
+DEST[MAX_KL-1:KL] := 0
+
+VCMPPD (VEX.256 Encoded Version) ¶
+
+CMP0 := SRC1[63:0] OP5 SRC2[63:0];
+CMP1 := SRC1[127:64] OP5 SRC2[127:64];
+CMP2 := SRC1[191:128] OP5 SRC2[191:128];
+CMP3 := SRC1[255:192] OP5 SRC2[255:192];
+IF CMP0 = TRUE
+    THEN DEST[63:0] := FFFFFFFFFFFFFFFFH;
+    ELSE DEST[63:0] := 0000000000000000H; FI;
+IF CMP1 = TRUE
+    THEN DEST[127:64] := FFFFFFFFFFFFFFFFH;
+    ELSE DEST[127:64] := 0000000000000000H; FI;
+IF CMP2 = TRUE
+    THEN DEST[191:128] := FFFFFFFFFFFFFFFFH;
+    ELSE DEST[191:128] := 0000000000000000H; FI;
+IF CMP3 = TRUE
+    THEN DEST[255:192] := FFFFFFFFFFFFFFFFH;
+    ELSE DEST[255:192] := 0000000000000000H; FI;
+DEST[MAXVL-1:256] := 0
+
+VCMPPD (VEX.128 Encoded Version) ¶
+
+CMP0 := SRC1[63:0] OP5 SRC2[63:0];
+CMP1 := SRC1[127:64] OP5 SRC2[127:64];
+IF CMP0 = TRUE
+    THEN DEST[63:0] := FFFFFFFFFFFFFFFFH;
+    ELSE DEST[63:0] := 0000000000000000H; FI;
+IF CMP1 = TRUE
+    THEN DEST[127:64] := FFFFFFFFFFFFFFFFH;
+    ELSE DEST[127:64] := 0000000000000000H; FI;
+DEST[MAXVL-1:128] := 0
+
+CMPPD (128-bit Legacy SSE Version) ¶
+
+CMP0 := SRC1[63:0] OP3 SRC2[63:0];
+CMP1 := SRC1[127:64] OP3 SRC2[127:64];
+IF CMP0 = TRUE
+    THEN DEST[63:0] := FFFFFFFFFFFFFFFFH;
+    ELSE DEST[63:0] := 0000000000000000H; FI;
+IF CMP1 = TRUE
+    THEN DEST[127:64] := FFFFFFFFFFFFFFFFH;
+    ELSE DEST[127:64] := 0000000000000000H; FI;
+DEST[MAXVL-1:128] (Unmodified)
 
 */
 }
 
 
 void me_op_cmpps(Mirtille_VirtualMachine *me){
-//
+//CMPPS — Compare Packed Single Precision Floating-Point Values
 /*
+Operation ¶
+
+CASE (COMPARISON PREDICATE) OF
+    0: OP3 := EQ_OQ; OP5 := EQ_OQ;
+    1: OP3 := LT_OS; OP5 := LT_OS;
+    2: OP3 := LE_OS; OP5 := LE_OS;
+    3: OP3 := UNORD_Q; OP5 := UNORD_Q;
+    4: OP3 := NEQ_UQ; OP5 := NEQ_UQ;
+    5: OP3 := NLT_US; OP5 := NLT_US;
+    6: OP3 := NLE_US; OP5 := NLE_US;
+    7: OP3 := ORD_Q; OP5 := ORD_Q;
+    8: OP5 := EQ_UQ;
+    9: OP5 := NGE_US;
+    10: OP5 := NGT_US;
+    11: OP5 := FALSE_OQ;
+    12: OP5 := NEQ_OQ;
+    13: OP5 := GE_OS;
+    14: OP5 := GT_OS;
+    15: OP5 := TRUE_UQ;
+    16: OP5 := EQ_OS;
+    17: OP5 := LT_OQ;
+    18: OP5 := LE_OQ;
+    19: OP5 := UNORD_S;
+    20: OP5 := NEQ_US;
+    21: OP5 := NLT_UQ;
+    22: OP5 := NLE_UQ;
+    23: OP5 := ORD_S;
+    24: OP5 := EQ_US;
+    25: OP5 := NGE_UQ;
+    26: OP5 := NGT_UQ;
+    27: OP5 := FALSE_OS;
+    28: OP5 := NEQ_OS;
+    29: OP5 := GE_OQ;
+    30: OP5 := GT_OQ;
+    31: OP5 := TRUE_US;
+    DEFAULT: Reserved
+ESAC;
+
+VCMPPS (EVEX Encoded Versions) ¶
+
+(KL, VL) = (4, 128), (8, 256), (16, 512)
+FOR j := 0 TO KL-1
+    i := j * 32
+    IF k2[j] OR *no writemask*
+        THEN
+            IF (EVEX.b = 1) AND (SRC2 *is memory*)
+                THEN
+                    CMP := SRC1[i+31:i] OP5 SRC2[31:0]
+                ELSE
+                    CMP := SRC1[i+31:i] OP5 SRC2[i+31:i]
+            FI;
+            IF CMP = TRUE
+                THEN DEST[j] := 1;
+                ELSE DEST[j] := 0; FI;
+        ELSE DEST[j] := 0
+                        ; zeroing-masking onlyFI;
+    FI;
+ENDFOR
+DEST[MAX_KL-1:KL] := 0
+
+VCMPPS (VEX.256 Encoded Version) ¶
+
+CMP0 := SRC1[31:0] OP5 SRC2[31:0];
+CMP1 := SRC1[63:32] OP5 SRC2[63:32];
+CMP2 := SRC1[95:64] OP5 SRC2[95:64];
+CMP3 := SRC1[127:96] OP5 SRC2[127:96];
+CMP4 := SRC1[159:128] OP5 SRC2[159:128];
+CMP5 := SRC1[191:160] OP5 SRC2[191:160];
+CMP6 := SRC1[223:192] OP5 SRC2[223:192];
+CMP7 := SRC1[255:224] OP5 SRC2[255:224];
+IF CMP0 = TRUE
+    THEN DEST[31:0] :=FFFFFFFFH;
+    ELSE DEST[31:0] := 000000000H; FI;
+IF CMP1 = TRUE
+    THEN DEST[63:32] := FFFFFFFFH;
+    ELSE DEST[63:32] :=000000000H; FI;
+IF CMP2 = TRUE
+    THEN DEST[95:64] := FFFFFFFFH;
+    ELSE DEST[95:64] := 000000000H; FI;
+IF CMP3 = TRUE
+    THEN DEST[127:96] := FFFFFFFFH;
+    ELSE DEST[127:96] := 000000000H; FI;
+IF CMP4 = TRUE
+    THEN DEST[159:128] := FFFFFFFFH;
+    ELSE DEST[159:128] := 000000000H; FI;
+IF CMP5 = TRUE
+    THEN DEST[191:160] := FFFFFFFFH;
+    ELSE DEST[191:160] := 000000000H; FI;
+IF CMP6 = TRUE
+    THEN DEST[223:192] := FFFFFFFFH;
+    ELSE DEST[223:192] :=000000000H; FI;
+IF CMP7 = TRUE
+    THEN DEST[255:224] := FFFFFFFFH;
+    ELSE DEST[255:224] := 000000000H; FI;
+DEST[MAXVL-1:256] := 0
+
+VCMPPS (VEX.128 Encoded Version) ¶
+
+CMP0 := SRC1[31:0] OP5 SRC2[31:0];
+CMP1 := SRC1[63:32] OP5 SRC2[63:32];
+CMP2 := SRC1[95:64] OP5 SRC2[95:64];
+CMP3 := SRC1[127:96] OP5 SRC2[127:96];
+IF CMP0 = TRUE
+    THEN DEST[31:0] :=FFFFFFFFH;
+    ELSE DEST[31:0] := 000000000H; FI;
+IF CMP1 = TRUE
+    THEN DEST[63:32] := FFFFFFFFH;
+    ELSE DEST[63:32] := 000000000H; FI;
+IF CMP2 = TRUE
+    THEN DEST[95:64] := FFFFFFFFH;
+    ELSE DEST[95:64] := 000000000H; FI;
+IF CMP3 = TRUE
+    THEN DEST[127:96] := FFFFFFFFH;
+    ELSE DEST[127:96] :=000000000H; FI;
+DEST[MAXVL-1:128] := 0
+
+CMPPS (128-bit Legacy SSE Version) ¶
+
+CMP0 := SRC1[31:0] OP3 SRC2[31:0];
+CMP1 := SRC1[63:32] OP3 SRC2[63:32];
+CMP2 := SRC1[95:64] OP3 SRC2[95:64];
+CMP3 := SRC1[127:96] OP3 SRC2[127:96];
+IF CMP0 = TRUE
+    THEN DEST[31:0] :=FFFFFFFFH;
+    ELSE DEST[31:0] := 000000000H; FI;
+IF CMP1 = TRUE
+    THEN DEST[63:32] := FFFFFFFFH;
+    ELSE DEST[63:32] := 000000000H; FI;
+IF CMP2 = TRUE
+    THEN DEST[95:64] := FFFFFFFFH;
+    ELSE DEST[95:64] := 000000000H; FI;
+IF CMP3 = TRUE
+    THEN DEST[127:96] := FFFFFFFFH;
+    ELSE DEST[127:96] :=000000000H; FI;
+DEST[MAXVL-1:128] (Unmodified)
 
 */
 }
 
 
 void me_op_cmps(Mirtille_VirtualMachine *me){
-//
+//CMPS/CMPSB/CMPSW/CMPSD/CMPSQ — Compare String Operands
 /*
+Operation ¶
+
+temp := SRC1 - SRC2;
+SetStatusFlags(temp);
+IF (64-Bit Mode)
+    THEN
+        IF (Byte comparison)
+        THEN IF DF = 0
+            THEN
+                (R|E)SI := (R|E)SI + 1;
+                (R|E)DI := (R|E)DI + 1;
+            ELSE
+                (R|E)SI := (R|E)SI – 1;
+                (R|E)DI := (R|E)DI – 1;
+            FI;
+        ELSE IF (Word comparison)
+            THEN IF DF = 0
+                THEN
+                    (R|E)SI
+                        := (R|E)SI + 2;
+                    (R|E)DI
+                        := (R|E)DI + 2;
+                ELSE
+                    (R|E)SI
+                        := (R|E)SI – 2;
+                    (R|E)DI
+                        := (R|E)DI – 2;
+                FI;
+        ELSE IF (Doubleword
+                        comparison)
+            THEN IF DF = 0
+                THEN
+                    (R|E)SI
+                        := (R|E)SI + 4;
+                    (R|E)DI
+                        := (R|E)DI + 4;
+                ELSE
+                    (R|E)SI
+                        := (R|E)SI – 4;
+                    (R|E)DI
+                        := (R|E)DI – 4;
+                FI;
+        ELSE (* Quadword comparison *)
+            THEN IF DF = 0
+                (R|E)SI := (R|E)SI + 8;
+                (R|E)DI := (R|E)DI + 8;
+            ELSE
+                (R|E)SI := (R|E)SI – 8;
+                (R|E)DI := (R|E)DI – 8;
+            FI;
+        FI;
+    ELSE (* Non-64-bit Mode *)
+        IF (byte comparison)
+        THEN IF DF = 0
+            THEN
+                (E)SI := (E)SI + 1;
+                (E)DI := (E)DI + 1;
+            ELSE
+                (E)SI := (E)SI – 1;
+                (E)DI := (E)DI – 1;
+            FI;
+        ELSE IF (Word comparison)
+            THENIFDF =0
+                (E)SI := (E)SI + 2;
+                (E)DI := (E)DI + 2;
+            ELSE
+                (E)SI := (E)SI – 2;
+                (E)DI := (E)DI – 2;
+            FI;
+        ELSE (* Doubleword comparison *)
+            THEN IF DF = 0
+                (E)SI := (E)SI + 4;
+                (E)DI := (E)DI + 4;
+            ELSE
+                (E)SI := (E)SI – 4;
+                (E)DI := (E)DI – 4;
+            FI;
+        FI;
+FI;
+
 
 */
 }
 
 
 void me_op_cmpsb(Mirtille_VirtualMachine *me){
-//
+//CMPS/CMPSB/CMPSW/CMPSD/CMPSQ — Compare String Operands
 /*
+Operation ¶
+
+temp := SRC1 - SRC2;
+SetStatusFlags(temp);
+IF (64-Bit Mode)
+    THEN
+        IF (Byte comparison)
+        THEN IF DF = 0
+            THEN
+                (R|E)SI := (R|E)SI + 1;
+                (R|E)DI := (R|E)DI + 1;
+            ELSE
+                (R|E)SI := (R|E)SI – 1;
+                (R|E)DI := (R|E)DI – 1;
+            FI;
+        ELSE IF (Word comparison)
+            THEN IF DF = 0
+                THEN
+                    (R|E)SI
+                        := (R|E)SI + 2;
+                    (R|E)DI
+                        := (R|E)DI + 2;
+                ELSE
+                    (R|E)SI
+                        := (R|E)SI – 2;
+                    (R|E)DI
+                        := (R|E)DI – 2;
+                FI;
+        ELSE IF (Doubleword
+                        comparison)
+            THEN IF DF = 0
+                THEN
+                    (R|E)SI
+                        := (R|E)SI + 4;
+                    (R|E)DI
+                        := (R|E)DI + 4;
+                ELSE
+                    (R|E)SI
+                        := (R|E)SI – 4;
+                    (R|E)DI
+                        := (R|E)DI – 4;
+                FI;
+        ELSE (* Quadword comparison *)
+            THEN IF DF = 0
+                (R|E)SI := (R|E)SI + 8;
+                (R|E)DI := (R|E)DI + 8;
+            ELSE
+                (R|E)SI := (R|E)SI – 8;
+                (R|E)DI := (R|E)DI – 8;
+            FI;
+        FI;
+    ELSE (* Non-64-bit Mode *)
+        IF (byte comparison)
+        THEN IF DF = 0
+            THEN
+                (E)SI := (E)SI + 1;
+                (E)DI := (E)DI + 1;
+            ELSE
+                (E)SI := (E)SI – 1;
+                (E)DI := (E)DI – 1;
+            FI;
+        ELSE IF (Word comparison)
+            THENIFDF =0
+                (E)SI := (E)SI + 2;
+                (E)DI := (E)DI + 2;
+            ELSE
+                (E)SI := (E)SI – 2;
+                (E)DI := (E)DI – 2;
+            FI;
+        ELSE (* Doubleword comparison *)
+            THEN IF DF = 0
+                (E)SI := (E)SI + 4;
+                (E)DI := (E)DI + 4;
+            ELSE
+                (E)SI := (E)SI – 4;
+                (E)DI := (E)DI – 4;
+            FI;
+        FI;
+FI;
 
 */
 }
 
 
 void me_op_cmpsd(Mirtille_VirtualMachine *me){
-//
+//CMPS/CMPSB/CMPSW/CMPSD/CMPSQ — Compare String Operands
 /*
+Operation ¶
+
+temp := SRC1 - SRC2;
+SetStatusFlags(temp);
+IF (64-Bit Mode)
+    THEN
+        IF (Byte comparison)
+        THEN IF DF = 0
+            THEN
+                (R|E)SI := (R|E)SI + 1;
+                (R|E)DI := (R|E)DI + 1;
+            ELSE
+                (R|E)SI := (R|E)SI – 1;
+                (R|E)DI := (R|E)DI – 1;
+            FI;
+        ELSE IF (Word comparison)
+            THEN IF DF = 0
+                THEN
+                    (R|E)SI
+                        := (R|E)SI + 2;
+                    (R|E)DI
+                        := (R|E)DI + 2;
+                ELSE
+                    (R|E)SI
+                        := (R|E)SI – 2;
+                    (R|E)DI
+                        := (R|E)DI – 2;
+                FI;
+        ELSE IF (Doubleword
+                        comparison)
+            THEN IF DF = 0
+                THEN
+                    (R|E)SI
+                        := (R|E)SI + 4;
+                    (R|E)DI
+                        := (R|E)DI + 4;
+                ELSE
+                    (R|E)SI
+                        := (R|E)SI – 4;
+                    (R|E)DI
+                        := (R|E)DI – 4;
+                FI;
+        ELSE (* Quadword comparison *)
+            THEN IF DF = 0
+                (R|E)SI := (R|E)SI + 8;
+                (R|E)DI := (R|E)DI + 8;
+            ELSE
+                (R|E)SI := (R|E)SI – 8;
+                (R|E)DI := (R|E)DI – 8;
+            FI;
+        FI;
+    ELSE (* Non-64-bit Mode *)
+        IF (byte comparison)
+        THEN IF DF = 0
+            THEN
+                (E)SI := (E)SI + 1;
+                (E)DI := (E)DI + 1;
+            ELSE
+                (E)SI := (E)SI – 1;
+                (E)DI := (E)DI – 1;
+            FI;
+        ELSE IF (Word comparison)
+            THENIFDF =0
+                (E)SI := (E)SI + 2;
+                (E)DI := (E)DI + 2;
+            ELSE
+                (E)SI := (E)SI – 2;
+                (E)DI := (E)DI – 2;
+            FI;
+        ELSE (* Doubleword comparison *)
+            THEN IF DF = 0
+                (E)SI := (E)SI + 4;
+                (E)DI := (E)DI + 4;
+            ELSE
+                (E)SI := (E)SI – 4;
+                (E)DI := (E)DI – 4;
+            FI;
+        FI;
+FI;
 
 */
 }
 
 
-void me_op_cmpsd(Mirtille_VirtualMachine *me){
-//
+void me_op_cmpsd_1(Mirtille_VirtualMachine *me){
+//CMPSD — Compare Scalar Double Precision Floating-Point Value
 /*
+Operation ¶
+
+CASE (COMPARISON PREDICATE) OF
+    0: OP3 := EQ_OQ; OP5 := EQ_OQ;
+    1: OP3 := LT_OS; OP5 := LT_OS;
+    2: OP3 := LE_OS; OP5 := LE_OS;
+    3: OP3 := UNORD_Q; OP5 := UNORD_Q;
+    4: OP3 := NEQ_UQ; OP5 := NEQ_UQ;
+    5: OP3 := NLT_US; OP5 := NLT_US;
+    6: OP3 := NLE_US; OP5 := NLE_US;
+    7: OP3 := ORD_Q; OP5 := ORD_Q;
+    8: OP5 := EQ_UQ;
+    9: OP5 := NGE_US;
+    10: OP5 := NGT_US;
+    11: OP5 := FALSE_OQ;
+    12: OP5 := NEQ_OQ;
+    13: OP5 := GE_OS;
+    14: OP5 := GT_OS;
+    15: OP5 := TRUE_UQ;
+    16: OP5 := EQ_OS;
+    17: OP5 := LT_OQ;
+    18: OP5 := LE_OQ;
+    19: OP5 := UNORD_S;
+    20: OP5 := NEQ_US;
+    21: OP5 := NLT_UQ;
+    22: OP5 := NLE_UQ;
+    23: OP5 := ORD_S;
+    24: OP5 := EQ_US;
+    25: OP5 := NGE_UQ;
+    26: OP5 := NGT_UQ;
+    27: OP5 := FALSE_OS;
+    28: OP5 := NEQ_OS;
+    29: OP5 := GE_OQ;
+    30: OP5 := GT_OQ;
+    31: OP5 := TRUE_US;
+    DEFAULT: Reserved
+ESAC;
+
+VCMPSD (EVEX Encoded Version) ¶
+
+CMP0 := SRC1[63:0] OP5 SRC2[63:0];
+IF k2[0] or *no writemask*
+    THEN IF CMP0 = TRUE
+        THEN DEST[0] := 1;
+        ELSE DEST[0] := 0; FI;
+    ELSE DEST[0] := 0
+            ; zeroing-masking only
+FI;
+DEST[MAX_KL-1:1] := 0
+
+CMPSD (128-bit Legacy SSE Version) ¶
+
+CMP0 := DEST[63:0] OP3 SRC[63:0];
+IF CMP0 = TRUE
+THEN DEST[63:0] := FFFFFFFFFFFFFFFFH;
+ELSE DEST[63:0] := 0000000000000000H; FI;
+DEST[MAXVL-1:64] (Unmodified)
+
+VCMPSD (VEX.128 Encoded Version) ¶
+
+CMP0 := SRC1[63:0] OP5 SRC2[63:0];
+IF CMP0 = TRUE
+THEN DEST[63:0] := FFFFFFFFFFFFFFFFH;
+ELSE DEST[63:0] := 0000000000000000H; FI;
+DEST[127:64] := SRC1[127:64]
+DEST[MAXVL-1:128] := 0
 
 */
 }
 
 
 void me_op_cmpsq(Mirtille_VirtualMachine *me){
-//
+//CMPS/CMPSB/CMPSW/CMPSD/CMPSQ — Compare String Operands
 /*
+Operation ¶
+
+temp := SRC1 - SRC2;
+SetStatusFlags(temp);
+IF (64-Bit Mode)
+    THEN
+        IF (Byte comparison)
+        THEN IF DF = 0
+            THEN
+                (R|E)SI := (R|E)SI + 1;
+                (R|E)DI := (R|E)DI + 1;
+            ELSE
+                (R|E)SI := (R|E)SI – 1;
+                (R|E)DI := (R|E)DI – 1;
+            FI;
+        ELSE IF (Word comparison)
+            THEN IF DF = 0
+                THEN
+                    (R|E)SI
+                        := (R|E)SI + 2;
+                    (R|E)DI
+                        := (R|E)DI + 2;
+                ELSE
+                    (R|E)SI
+                        := (R|E)SI – 2;
+                    (R|E)DI
+                        := (R|E)DI – 2;
+                FI;
+        ELSE IF (Doubleword
+                        comparison)
+            THEN IF DF = 0
+                THEN
+                    (R|E)SI
+                        := (R|E)SI + 4;
+                    (R|E)DI
+                        := (R|E)DI + 4;
+                ELSE
+                    (R|E)SI
+                        := (R|E)SI – 4;
+                    (R|E)DI
+                        := (R|E)DI – 4;
+                FI;
+        ELSE (* Quadword comparison *)
+            THEN IF DF = 0
+                (R|E)SI := (R|E)SI + 8;
+                (R|E)DI := (R|E)DI + 8;
+            ELSE
+                (R|E)SI := (R|E)SI – 8;
+                (R|E)DI := (R|E)DI – 8;
+            FI;
+        FI;
+    ELSE (* Non-64-bit Mode *)
+        IF (byte comparison)
+        THEN IF DF = 0
+            THEN
+                (E)SI := (E)SI + 1;
+                (E)DI := (E)DI + 1;
+            ELSE
+                (E)SI := (E)SI – 1;
+                (E)DI := (E)DI – 1;
+            FI;
+        ELSE IF (Word comparison)
+            THENIFDF =0
+                (E)SI := (E)SI + 2;
+                (E)DI := (E)DI + 2;
+            ELSE
+                (E)SI := (E)SI – 2;
+                (E)DI := (E)DI – 2;
+            FI;
+        ELSE (* Doubleword comparison *)
+            THEN IF DF = 0
+                (E)SI := (E)SI + 4;
+                (E)DI := (E)DI + 4;
+            ELSE
+                (E)SI := (E)SI – 4;
+                (E)DI := (E)DI – 4;
+            FI;
+        FI;
+FI;
 
 */
 }
 
 
 void me_op_cmpss(Mirtille_VirtualMachine *me){
-//
+//CMPSS — Compare Scalar Single Precision Floating-Point Value
 /*
+Operation ¶
+
+CASE (COMPARISON PREDICATE) OF
+    0: OP3 := EQ_OQ; OP5 := EQ_OQ;
+    1: OP3 := LT_OS; OP5 := LT_OS;
+    2: OP3 := LE_OS; OP5 := LE_OS;
+    3: OP3 := UNORD_Q; OP5 := UNORD_Q;
+    4: OP3 := NEQ_UQ; OP5 := NEQ_UQ;
+    5: OP3 := NLT_US; OP5 := NLT_US;
+    6: OP3 := NLE_US; OP5 := NLE_US;
+    7: OP3 := ORD_Q; OP5 := ORD_Q;
+    8: OP5 := EQ_UQ;
+    9: OP5 := NGE_US;
+    10: OP5 := NGT_US;
+    11: OP5 := FALSE_OQ;
+    12: OP5 := NEQ_OQ;
+    13: OP5 := GE_OS;
+    14: OP5 := GT_OS;
+    15: OP5 := TRUE_UQ;
+    16: OP5 := EQ_OS;
+    17: OP5 := LT_OQ;
+    18: OP5 := LE_OQ;
+    19: OP5 := UNORD_S;
+    20: OP5 := NEQ_US;
+    21: OP5 := NLT_UQ;
+    22: OP5 := NLE_UQ;
+    23: OP5 := ORD_S;
+    24: OP5 := EQ_US;
+    25: OP5 := NGE_UQ;
+    26: OP5 := NGT_UQ;
+    27: OP5 := FALSE_OS;
+    28: OP5 := NEQ_OS;
+    29: OP5 := GE_OQ;
+    30: OP5 := GT_OQ;
+    31: OP5 := TRUE_US;
+    DEFAULT: Reserved
+ESAC;
+
+VCMPSS (EVEX Encoded Version) ¶
+
+CMP0 := SRC1[31:0] OP5 SRC2[31:0];
+IF k2[0] or *no writemask*
+    THEN IF CMP0 = TRUE
+        THEN DEST[0] := 1;
+        ELSE DEST[0] := 0; FI;
+    ELSE DEST[0] := 0
+            ; zeroing-masking only
+FI;
+DEST[MAX_KL-1:1] := 0
+
+CMPSS (128-bit Legacy SSE Version) ¶
+
+CMP0 := DEST[31:0] OP3 SRC[31:0];
+IF CMP0 = TRUE
+THEN DEST[31:0] := FFFFFFFFH;
+ELSE DEST[31:0] := 00000000H; FI;
+DEST[MAXVL-1:32] (Unmodified)
+
+VCMPSS (VEX.128 Encoded Version) ¶
+
+CMP0 := SRC1[31:0] OP5 SRC2[31:0];
+IF CMP0 = TRUE
+THEN DEST[31:0] := FFFFFFFFH;
+ELSE DEST[31:0] := 00000000H; FI;
+DEST[127:32] := SRC1[127:32]
+DEST[MAXVL-1:128] := 0
 
 */
 }
@@ -1851,16 +3147,36 @@ void me_op_cvttss2si(Mirtille_VirtualMachine *me){
 
 
 void me_op_cwd(Mirtille_VirtualMachine *me){
-//
+//CWD/CDQ/CQO — Convert Word to Doubleword/Convert Doubleword to Quadword
 /*
+Operation ¶
+
+IF OperandSize = 16 (* CWD instruction *)
+    THEN
+        DX := SignExtend(AX);
+    ELSE IF OperandSize = 32 (* CDQ instruction *)
+        EDX := SignExtend(EAX); FI;
+    ELSE IF 64-Bit Mode and OperandSize = 64 (* CQO instruction*)
+        RDX := SignExtend(RAX); FI;
+FI;
 
 */
 }
 
 
 void me_op_cwde(Mirtille_VirtualMachine *me){
-//
+//CBW/CWDE/CDQE — Convert Byte to Word/Convert Word to Doubleword/Convert Doubleword toQuadword
 /*
+Operation ¶
+
+IF OperandSize = 16 (* Instruction = CBW *)
+    THEN
+        AX := SignExtend(AL);
+    ELSE IF (OperandSize = 32, Instruction = CWDE)
+        EAX := SignExtend(AX); FI;
+    ELSE (* 64-Bit Mode, OperandSize = 64, Instruction = CDQE*)
+        RAX := SignExtend(EAX);
+FI;
 
 */
 }
@@ -1883,48 +3199,264 @@ void me_op_das(Mirtille_VirtualMachine *me){
 
 
 void me_op_dec(Mirtille_VirtualMachine *me){
-//
+//DEC — Decrement by 1
 /*
+Operation ¶
+
+DEST := DEST – 1;
 
 */
 }
 
 
 void me_op_div(Mirtille_VirtualMachine *me){
-//
+//DIV — Unsigned Divide
 /*
+Operation ¶
+
+IF SRC = 0
+    THEN #DE; FI; (* Divide Error *)
+IF OperandSize = 8 (* Word/Byte Operation *)
+    THEN
+        temp := AX / SRC;
+        IF temp > FFH
+            THEN #DE; (* Divide error *)
+            ELSE
+                AL := temp;
+                AH := AX MOD SRC;
+        FI;
+    ELSE IF OperandSize = 16 (* Doubleword/word operation *)
+        THEN
+            temp := DX:AX / SRC;
+            IF temp > FFFFH
+                THEN #DE; (* Divide error *)
+            ELSE
+                AX := temp;
+                DX := DX:AX MOD SRC;
+            FI;
+        FI;
+    ELSE IF Operandsize = 32 (* Quadword/doubleword operation *)
+        THEN
+            temp := EDX:EAX / SRC;
+            IF temp > FFFFFFFFH
+                THEN #DE; (* Divide error *)
+            ELSE
+                EAX := temp;
+                EDX := EDX:EAX MOD SRC;
+            FI;
+        FI;
+    ELSE IF 64-Bit Mode and Operandsize = 64 (* Doublequadword/quadword operation *)
+        THEN
+            temp := RDX:RAX / SRC;
+            IF temp > FFFFFFFFFFFFFFFFH
+                THEN #DE; (* Divide error *)
+            ELSE
+                RAX := temp;
+                RDX := RDX:RAX MOD SRC;
+            FI;
+        FI;
+FI;
 
 */
 }
 
 
 void me_op_divpd(Mirtille_VirtualMachine *me){
-//
+//DIVPD — Divide Packed Double Precision Floating-Point Values
 /*
+Operation ¶
+VDIVPD (EVEX Encoded Versions) ¶
+
+(KL, VL) = (2, 128), (4, 256), (8, 512)
+IF (VL = 512) AND (EVEX.b = 1) AND SRC2 *is a register*
+    THEN
+        SET_ROUNDING_MODE_FOR_THIS_INSTRUCTION(EVEX.RC); ; refer to Table 15-4 in the Intel® 64 and IA-32 Architectures
+Software Developer’s Manual, Volume 1
+    ELSE
+        SET_ROUNDING_MODE_FOR_THIS_INSTRUCTION(MXCSR.RC);
+FI;
+FOR j := 0 TO KL-1
+    i := j * 64
+    IF k1[j] OR *no writemask*
+        THEN
+            IF (EVEX.b = 1) AND (SRC2 *is memory*)
+                THEN
+                    DEST[i+63:i] := SRC1[i+63:i] / SRC2[63:0]
+                ELSE
+                    DEST[i+63:i] := SRC1[i+63:i] / SRC2[i+63:i]
+            FI;
+        ELSE
+            IF *merging-masking* ; merging-masking
+                THEN *DEST[i+63:i] remains unchanged*
+                ELSE ; zeroing-masking
+                    DEST[i+63:i] := 0
+            FI
+    FI;
+ENDFOR
+DEST[MAXVL-1:VL] := 0
+
+VDIVPD (VEX.256 Encoded Version) ¶
+
+DEST[63:0] := SRC1[63:0] / SRC2[63:0]
+DEST[127:64] := SRC1[127:64] / SRC2[127:64]
+DEST[191:128] := SRC1[191:128] / SRC2[191:128]
+DEST[255:192] := SRC1[255:192] / SRC2[255:192]
+DEST[MAXVL-1:256] := 0;
+
+VDIVPD (VEX.128 Encoded Version) ¶
+
+DEST[63:0] := SRC1[63:0] / SRC2[63:0]
+DEST[127:64] := SRC1[127:64] / SRC2[127:64]
+DEST[MAXVL-1:128] := 0;
+
+DIVPD (128-bit Legacy SSE Version) ¶
+
+DEST[63:0] := SRC1[63:0] / SRC2[63:0]
+DEST[127:64] := SRC1[127:64] / SRC2[127:64]
+DEST[MAXVL-1:128] (Unmodified)
 
 */
 }
 
 
 void me_op_divps(Mirtille_VirtualMachine *me){
-//
+//DIVPS — Divide Packed Single Precision Floating-Point Values
 /*
+Operation ¶
+VDIVPS (EVEX Encoded Versions) ¶
+
+(KL, VL) = (4, 128), (8, 256), (16, 512)
+IF (VL = 512) AND (EVEX.b = 1) AND SRC2 *is a register*
+    THEN
+        SET_ROUNDING_MODE_FOR_THIS_INSTRUCTION(EVEX.RC);
+    ELSE
+        SET_ROUNDING_MODE_FOR_THIS_INSTRUCTION(MXCSR.RC);
+FI;
+FOR j := 0 TO KL-1
+    i := j * 32
+    IF k1[j] OR *no writemask*
+        THEN
+            IF (EVEX.b = 1) AND (SRC2 *is memory*)
+                THEN
+                    DEST[i+31:i] := SRC1[i+31:i] / SRC2[31:0]
+                ELSE
+                    DEST[i+31:i] := SRC1[i+31:i] / SRC2[i+31:i]
+            FI;
+        ELSE
+            IF *merging-masking* ; merging-masking
+                THEN *DEST[i+31:i] remains unchanged*
+                ELSE ; zeroing-masking
+                    DEST[i+31:i] := 0
+            FI
+    FI;
+ENDFOR
+DEST[MAXVL-1:VL] := 0
+
+VDIVPS (VEX.256 Encoded Version) ¶
+
+DEST[31:0] := SRC1[31:0] / SRC2[31:0]
+DEST[63:32] := SRC1[63:32] / SRC2[63:32]
+DEST[95:64] := SRC1[95:64] / SRC2[95:64]
+DEST[127:96] := SRC1[127:96] / SRC2[127:96]
+DEST[159:128] := SRC1[159:128] / SRC2[159:128]
+DEST[191:160] := SRC1[191:160] / SRC2[191:160]
+DEST[223:192] := SRC1[223:192] / SRC2[223:192]
+DEST[255:224] := SRC1[255:224] / SRC2[255:224].
+DEST[MAXVL-1:256] := 0;
+
+VDIVPS (VEX.128 Encoded Version) ¶
+
+DEST[31:0] := SRC1[31:0] / SRC2[31:0]
+DEST[63:32] := SRC1[63:32] / SRC2[63:32]
+DEST[95:64] := SRC1[95:64] / SRC2[95:64]
+DEST[127:96] := SRC1[127:96] / SRC2[127:96]
+DEST[MAXVL-1:128] := 0
+
+DIVPS (128-bit Legacy SSE Version) ¶
+
+DEST[31:0] := SRC1[31:0] / SRC2[31:0]
+DEST[63:32] := SRC1[63:32] / SRC2[63:32]
+DEST[95:64] := SRC1[95:64] / SRC2[95:64]
+DEST[127:96] := SRC1[127:96] / SRC2[127:96]
+DEST[MAXVL-1:128] (Unmodified)
 
 */
 }
 
 
 void me_op_divsd(Mirtille_VirtualMachine *me){
-//
+//DIVSD — Divide Scalar Double Precision Floating-Point Value
 /*
+Operation ¶
+VDIVSD (EVEX Encoded Version) ¶
+
+IF (EVEX.b = 1) AND SRC2 *is a register*
+    THEN
+        SET_ROUNDING_MODE_FOR_THIS_INSTRUCTION(EVEX.RC);
+    ELSE
+        SET_ROUNDING_MODE_FOR_THIS_INSTRUCTION(MXCSR.RC);
+FI;
+IF k1[0] or *no writemask*
+    THEN DEST[63:0] := SRC1[63:0] / SRC2[63:0]
+    ELSE
+        IF *merging-masking* ; merging-masking
+            THEN *DEST[63:0] remains unchanged*
+            ELSE ; zeroing-masking
+                THEN DEST[63:0] := 0
+        FI;
+FI;
+DEST[127:64] := SRC1[127:64]
+DEST[MAXVL-1:128] := 0
+
+VDIVSD (VEX.128 Encoded Version) ¶
+
+DEST[63:0] := SRC1[63:0] / SRC2[63:0]
+DEST[127:64] := SRC1[127:64]
+DEST[MAXVL-1:128] := 0
+
+DIVSD (128-bit Legacy SSE Version) ¶
+
+DEST[63:0] := DEST[63:0] / SRC[63:0]
+DEST[MAXVL-1:64] (Unmodified)
 
 */
 }
 
 
 void me_op_divss(Mirtille_VirtualMachine *me){
-//
+//DIVSS — Divide Scalar Single Precision Floating-Point Values
 /*
+Operation ¶
+VDIVSS (EVEX Encoded Version) ¶
+
+IF (EVEX.b = 1) AND SRC2 *is a register*
+    THEN
+        SET_ROUNDING_MODE_FOR_THIS_INSTRUCTION(EVEX.RC);
+    ELSE
+        SET_ROUNDING_MODE_FOR_THIS_INSTRUCTION(MXCSR.RC);
+FI;
+IF k1[0] or *no writemask*
+    THEN DEST[31:0] := SRC1[31:0] / SRC2[31:0]
+    ELSE
+        IF *merging-masking* ; merging-masking
+            THEN *DEST[31:0] remains unchanged*
+            ELSE ; zeroing-masking
+                THEN DEST[31:0] := 0
+        FI;
+FI;
+DEST[127:32] := SRC1[127:32]
+DEST[MAXVL-1:128] := 0
+
+VDIVSS (VEX.128 Encoded Version) ¶
+
+DEST[31:0] := SRC1[31:0] / SRC2[31:0]
+DEST[127:32] := SRC1[127:32]
+DEST[MAXVL-1:128] := 0
+
+DIVSS (128-bit Legacy SSE Version) ¶
+
+DEST[31:0] := DEST[31:0] / SRC[31:0]
+DEST[MAXVL-1:32] (Unmodified)
 
 */
 }
@@ -2102,24 +3634,51 @@ void me_op_f2xm1(Mirtille_VirtualMachine *me){
 
 
 void me_op_fabs(Mirtille_VirtualMachine *me){
-//
+//FABS — Absolute Value
 /*
+Operation ¶
+
+ST(0) := |ST(0)|;
 
 */
 }
 
 
 void me_op_fadd(Mirtille_VirtualMachine *me){
-//
+//FADD/FADDP/FIADD — Add
 /*
+Operation ¶
+
+IF Instruction = FIADD
+    THEN
+        DEST := DEST + ConvertToDoubleExtendedPrecisionFP(SRC);
+    ELSE (* Source operand is floating-point value *)
+        DEST := DEST + SRC;
+FI;
+IF Instruction = FADDP
+    THEN
+        PopRegisterStack;
+FI;
 
 */
 }
 
 
 void me_op_faddp(Mirtille_VirtualMachine *me){
-//
+//FADD/FADDP/FIADD — Add
 /*
+Operation ¶
+
+IF Instruction = FIADD
+    THEN
+        DEST := DEST + ConvertToDoubleExtendedPrecisionFP(SRC);
+    ELSE (* Source operand is floating-point value *)
+        DEST := DEST + SRC;
+FI;
+IF Instruction = FADDP
+    THEN
+        PopRegisterStack;
+FI;
 
 */
 }
@@ -2206,24 +3765,56 @@ void me_op_fcompp(Mirtille_VirtualMachine *me){
 
 
 void me_op_fcos(Mirtille_VirtualMachine *me){
-//
+//FCOS — Cosine
 /*
+Operation ¶
+
+IF |ST(0)| < 263
+THEN
+    C2 := 0;
+    ST(0) := FCOS(ST(0)); // approximation of cosine
+ELSE (* Source operand is out-of-range *)
+    C2 := 1;
+FI;
 
 */
 }
 
 
 void me_op_fdecstp(Mirtille_VirtualMachine *me){
-//
+//FDECSTP — Decrement Stack-Top Pointer
 /*
+Operation ¶
+
+IF TOP = 0
+    THEN TOP := 7;
+    ELSE TOP := TOP – 1;
+FI;
 
 */
 }
 
 
 void me_op_fdiv(Mirtille_VirtualMachine *me){
-//
+//FDIV/FDIVP/FIDIV — Divide
 /*
+Operation ¶
+
+IF SRC = 0
+    THEN
+        #Z;
+    ELSE
+        IF Instruction is FIDIV
+            THEN
+                DEST := DEST / ConvertToDoubleExtendedPrecisionFP(SRC);
+            ELSE (* Source operand is floating-point value *)
+                DEST := DEST / SRC;
+        FI;
+FI;
+IF Instruction = FDIVP
+    THEN
+        PopRegisterStack;
+FI;
 
 */
 }
