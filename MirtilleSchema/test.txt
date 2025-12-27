@@ -1,0 +1,166 @@
+@startuml
+
+title Mirtille Virtual Machine
+
+class ArtificielIntelligence {
+
+}
+
+class Backups {
+
+}
+
+class Debug {
+
+}
+
+class Engine {
+
+}
+
+class Error {
+
+}
+
+
+class Graph {
+
+}
+
+class Heap {
+
+}
+
+class Memory {
+
+}
+
+class Network {
+
+}
+
+class OpCode {
+
+}
+
+class Portaudio {
+
+}
+
+class Register {
+
+}
+
+class Serializer {
+
+}
+
+class Sound {
+
+}
+
+
+class STP {
+
+}
+
+class System {
+
+}
+
+
+class Trame {
+
+}
+
+class Utils {
+
+}
+
+class Video {
+
+}
+
+class OpenGL {
+
+}
+
+
+class VirtualMachine_VM {
+
+}
+
+class Image {
+
+}
+
+class Main {
+
+}
+
+VirtualMachine_VM <|-down- ArtificielIntelligence: Composition
+
+
+VirtualMachine_VM <|-down-  System: Composition
+
+Video <|-down-  System: Composition
+VirtualMachine_VM <|-up-  Debug: Composition
+
+Main <|-down-  System: Composition
+Main <|-up-    Error: Composition
+
+Main <|-up-    Image: 'Binary File Software'
+
+Video <|-up-    OpenGL: Composition
+
+
+Backups <|-down-  Serializer: Composition
+
+
+Engine <|-down-  System: Composition
+VirtualMachine_VM <|-down-  Register: Composition
+Engine <|-down- VirtualMachine_VM: Composition
+
+VirtualMachine_VM <|-up-    OpCode: Composition
+
+
+
+VirtualMachine_VM <|-up-  Memory: Composition
+Memory <|-up-  Heap: Composition
+
+
+VirtualMachine_VM <|-down- Video: Composition
+VirtualMachine_VM <|-down-  Sound: Composition
+
+
+Sound <|-up-  Portaudio: Composition
+Main <|-down-  Utils: Composition
+VirtualMachine_VM <|-down-  Utils: Composition
+
+
+
+Main <|-up-  Engine: Composition
+Main <|-up-  Debug: Composition
+Main <|-up-  Backups: Composition
+
+
+STP <|-up-  Error: Composition
+
+Network <|-up-  STP: Composition
+Network <|-down-  Trame: Composition
+Network <|-up-    Graph: Composition
+
+VirtualMachine_VM <|-up-    Network: Composition
+
+Trame <|-up-    Graph: Composition
+
+
+@enduml
+
+
+
+
+
+
+
+

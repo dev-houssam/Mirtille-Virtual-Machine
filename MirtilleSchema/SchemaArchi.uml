@@ -1,0 +1,135 @@
+@startuml
+
+title Mirtille Virtual Machine
+
+class ArtificielIntelligence {
+
+}
+
+class Backups {
+
+}
+
+class Debug {
+
+}
+
+class Engine {
+
+}
+
+class Error {
+
+}
+
+
+class Graph {
+
+}
+
+class Heap {
+
+}
+
+class Memory {
+
+}
+
+class Network {
+
+}
+
+class OpCode {
+
+}
+
+class Portaudio {
+
+}
+
+class Register {
+
+}
+
+class Serializer {
+
+}
+
+class Sound {
+
+}
+
+
+class STP {
+
+}
+
+class System {
+
+}
+
+
+class Trame {
+
+}
+
+class Utils {
+
+}
+
+class Video {
+
+}
+
+
+class VirtualMachine_VM {
+
+}
+
+
+
+class Main {
+
+}
+
+
+Main <|-down- VirtualMachine_VM: Composition
+Main <|-down-  System: Composition
+
+Main <|-up-    Error: Composition
+
+
+Main <|-down-  Serializer: Composition
+Main <|-down-  Register: Composition
+Main <|-up-    OpCode: Composition
+
+Main <|-up-  Memory: Composition
+Main <|-up-  Heap: Composition
+Main <|-down- Video: Composition
+Main <|-down-  Sound: Composition
+Main <|-up-  Portaudio: Composition
+Main <|-down-  Utils: Composition
+
+Main <|-up-  Engine: Composition
+Main <|-up-  Debug: Composition
+Main <|-up-  Backups: Composition
+
+
+
+
+Network <|-down-  STP: Composition
+Network <|-down-  Trame: Composition
+Main <|-up-    Network: Composition
+Network <|-up-    Graph: Composition
+
+
+
+@enduml
+
+
+
+
+
+
+
+
