@@ -5,6 +5,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <unistd.h>
+#include <wait.h>
+
 
 typedef enum {
 	OK
@@ -13,6 +19,7 @@ typedef enum {
 typedef struct
 {
 	ME_VIDEO_SYSTEM_STATE_T setVideoState;
+	pthread_t video_pid;
 } ME_System;
 
 ME_System * create_MirtilleSystem();
@@ -20,6 +27,10 @@ ME_System * create_MirtilleSystem();
 void me_init_System(ME_System * me_system, const char * title);
 
 void me_configuration_init_system(ME_System * me_system);
+
+void kill_video_system(ME_System * me_system);
+
+void me_getResolution(int * _W, int *_H);
 
 void me_destroy_System(ME_System * me_system);
 

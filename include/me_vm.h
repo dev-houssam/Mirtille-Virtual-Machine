@@ -17,6 +17,7 @@
 #include "me_network.h"
 #include "me_memory.h"
 
+
 #define VM_NUM_VARIABLES 100
 
 typedef uint16_t me_RegisterOnInt16_t;
@@ -57,6 +58,7 @@ uint8_t fetchByteFromInstructionsSet(Instruction * instructionSet);
 uint16_t fetchWordFromInstructionsSet(Instruction * instructionSet);
 
 //Instruction
+/*
 void me_op_mov(Mirtille_VirtualMachine *me);
 void me_op_add(Mirtille_VirtualMachine *me);
 void me_op_call(Mirtille_VirtualMachine *me);
@@ -69,7 +71,7 @@ void me_op_or(Mirtille_VirtualMachine *me);
 void me_op_shl(Mirtille_VirtualMachine *me);
 void me_op_shr(Mirtille_VirtualMachine *me);
 
-
+*/
 
 void me_op_updateMemList(Mirtille_VirtualMachine *me);
 void me_inp_handleSpecialKeys(Mirtille_VirtualMachine *me);

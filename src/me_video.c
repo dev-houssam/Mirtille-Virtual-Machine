@@ -12,29 +12,87 @@
 #include <GL/glut.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 
 const char * compileTest(){return "gcc filename.c -lGL -lGLU -lglut";}
 
-void me_windows_openGL_loop() {
+#define PI 3.14159
+
+void drawCircle()
+{
+   
+}
+
+
+
+void me_windows_openGL_loop(float * posx) {
     //Test
     glClearColor(0.0, 0.0, 0.0, 1.0);
-    glColor3f(1.0, 1.0, 1.0);
+    glColor3f(1.0, 1.0, *posx);
     glBegin(GL_TRIANGLES);
         glVertex2f(-0.5, -0.5);
-        glVertex2f(0.5, -0.5);
+        glVertex2f(*posx, -0.5);
         glVertex2f(0.0, 0.5);
     glEnd();
+
+     glColor3f(0.5, 1.3, *posx);
+    glBegin(GL_TRIANGLES);
+        glVertex2f(-0.5, -0.5);
+        glVertex2f(*posx+0.3, -0.5);
+        glVertex2f(0.0, *posx);
+    glEnd();
+
+    GLint i;
+   GLfloat cosine, sine;
+
+   glBegin(GL_POLYGON);
+      for(i=0;i<100;i++){
+         cosine=(i*2*PI/100.0);
+         sine=(i*2*PI/100.0);
+         glVertex2f(cosine,sine);
+      }
+   glEnd();
+
+
+    GLuint base;
+
+    base = glGenLists (128);
+    glListBase(base);
+    glNewList(base+'A', GL_COMPILE); 
+      
+    glNewList(base+' ', GL_COMPILE);    /* space character */
+       glTranslatef(8.0, 0.0, 0.0); glEndList();
+
+
+    if(*posx >= 1.5){
+    	*posx=0.0;
+    }
+    *posx += 0.009;
+    printf("ok = %f=\n", *posx);
+    
     
 
 	//Use server to update display buffer
 	//me_updateDisplay(ME_Video* video, uint8_t pageServer);
 }
+float ps = 0.0;
+
+
+
+void handleKill(){
+
+	me_windows_openGL_loop(&ps);
+}
 
 void display() {
-	
-    glClear(GL_COLOR_BUFFER_BIT);
-    me_windows_openGL_loop();
+	//signal(SIGKILL, handleKill);
+	//float posx = 0.0;
+   	glClear(GL_COLOR_BUFFER_BIT);
+    me_windows_openGL_loop(&ps);
     glFlush();
+    glutSwapBuffers();
+     //system("sleep 0.01");
+   
     
 }
 
@@ -51,6 +109,7 @@ ME_Video * me_create_video(){
 	}else{
 		fprintf(stdout, "%s\n", "Configuration video system");
 	}
+	//video->callback = NULL;
 	// We use system configuration to make setting for video
 	//subStub.setVideoState = ME_VIDEO_STATE_OK; // 1 for OK
 	return video;
@@ -71,18 +130,27 @@ void me_configuration_init_video(ME_Video * video) {
 	char fakeParam[] = "fake";
 	char *fakeargv[] = { fakeParam, NULL };
 
+	video->callback = &me_windows_openGL_loop;
+
+	printf("video:callback=%p\n", video->callback);
+	int Width, Height;
+	me_getResolution(&Width, &Height);
+
 	// INIT using OpenGL
 	glutInit(&argc, fakeargv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    glutInitWindowSize(500, 500);
+    glutInitWindowSize(Width, Height); //500, 500
     glutCreateWindow("MirtilleVirtualMachine");
     glutDisplayFunc(display);
+    glutIdleFunc(display);
     glutMainLoop();
+    perror("Configuration Video\n");
 }
 
 void * Screen(void * arg){
 	ME_Video* video = (ME_Video *) arg;
 	me_configuration_init_video(video);
+	printf("Screen\n");
 }
 
 void me_setDataBuffer(ME_Video * video, uint8_t *dataBuf, uint16_t offset) {

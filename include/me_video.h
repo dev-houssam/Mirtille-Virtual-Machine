@@ -15,10 +15,12 @@
 #include <stdint.h>
 //#define NDEBUG
 #include <assert.h>
+#include <math.h>
 
 struct ME_Video;
 
 struct ME_System;
+
 
 
 typedef enum {
@@ -33,7 +35,7 @@ typedef struct { } Designer;
 
 
 typedef struct {
-	void (*callback)(struct ME_Video* video, int16_t x1, int16_t x2, uint8_t col);
+	void (*callback)(float *); //struct ME_Video* video
 
 	struct ME_System *sys;
 

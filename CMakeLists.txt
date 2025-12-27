@@ -19,12 +19,16 @@ set(SRCS
     src/me_memory.c
     src/me_sound.c
     src/me_trame.c
+    src/me_opcode.c
+    src/me_trame.c
     )
     
 # src/testNet.c
 
 
 set(HEADERS
+    include/me_opcode.h
+    include/me_register.h
     include/me_ai.h
     include/me_graph.h
     include/me_sound.h
@@ -73,7 +77,7 @@ find_package(OpenGL REQUIRED)
 
 # target_link_libraries(MVM PUBLIC GL GLUT portaudio)
 
-add_definitions(-lGL -lGLU -lglut -lpthread -D_REENTRANT)
+add_definitions(-lGL -lGLU -lglut -lpthread -D_REENTRANT -lm)
 
 target_link_libraries(MVM PUBLIC GL glut GLU  portaudio)
 

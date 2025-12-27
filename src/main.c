@@ -48,13 +48,15 @@ static bool me_parseOption(const char *arg, const char *longCmd, const char **op
 	}
 	return ret;
 }
+#define MIRTILLE_MACHINE_ERROR_CODE_t int
 
-
-MIRTILLE_MACHINE_ERROR_CODE 
+MIRTILLE_MACHINE_ERROR_CODE_t
 main(int argc, char const *argv[])
 {
 	const char *me_dataPath = ".";
 	const char *me_savePath = ".";
+
+	
 	
 	if(0 == me_checkOptions(argc, argv, me_dataPath, me_savePath)){
 		perror("me_checkOptions(argc, argv, me_dataPath, me_savePath) : Error");
@@ -62,6 +64,7 @@ main(int argc, char const *argv[])
 	}
 	perror("CHECKING-OK: Before State");
 	perror("Création de la machine virtuelle");
+	//exit(EXIT_SUCCESS);
 	ME_System * me_system = create_MirtilleSystem();
 	perror("System: State");
 
@@ -79,5 +82,12 @@ main(int argc, char const *argv[])
 	me_destroy_MirtilleEngine(me);
 	perror("Destruction de la machine virtuelle");
 
-	return ME_EXIT_FAILURE;
+	kill_video_system(me->sys);
+	//printf("Yes !!! ! \n");
+	perror("\033[41mCorrect it: \nX Error of failed request:  BadAccess (attempt to access private resource denied)\
+  Major opcode of failed request:  152 (GLX)\
+  Minor opcode of failed request:  26 (X_GLXMakeContextCurrent)\
+  Serial number of failed request:  74\
+  Current serial number in output stream:  74\033[00m \n");
+	return (int) ME_EXIT_FAILURE;
 }

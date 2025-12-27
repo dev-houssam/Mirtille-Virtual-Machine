@@ -1,3 +1,4 @@
+#include "../include/me_opcode.h"
 #include "../include/me_vm.h"
 #include "../include/me_video.h"
 #include "../include/me_system.h"
@@ -19,7 +20,7 @@ Mirtille_VirtualMachine * create_VirtualMachine( ME_Video *vid, ME_System *stub)
 }
 
 void me_configuration_init_VM(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
+	assert(me != NULL && "message on assert");
 	memset(me->me_vmVariables, 0, sizeof(me->me_vmVariables));
 }
 
@@ -33,27 +34,32 @@ uint16_t fetchWordFromInstructionsSet(Instruction * instructionSet){
 	return instructionSet->instr[(instructionSet->pc)++];
 }
 
-
+/*
 void me_op_mov(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t dstVariableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
-	uint8_t srcVariableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));	
+	assert(me != NULL && "message on assert");
+	uint8_t dstVariableId = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
+	uint8_t srcVariableId = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));	
 	//debug(DBG_VM, "Mirtille_VirtualMachine: op_mov(0x%02X, 0x%02X)", dstVariableId, srcVariableId);
 	me->me_vmVariables[dstVariableId] = me->me_vmVariables[srcVariableId];
 }
 
 void me_op_add(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t dstVariableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
-	uint8_t srcVariableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint8_t dstVariableId = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
+	uint8_t srcVariableId = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_add(0x%02X, 0x%02X)", dstVariableId, srcVariableId);
 	me->me_vmVariables[dstVariableId] += me->me_vmVariables[srcVariableId];
 }
 
 
 void me_op_call(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint16_t offset = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint16_t offset = //GET
+ fetchWordFromInstructionsSet(&(me->instructions));
 	//uint8_t sp = me->none;
 
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_call(0x%X)", offset);
@@ -66,7 +72,7 @@ void me_op_call(Mirtille_VirtualMachine * me) {
 }
 
 void me_op_ret(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
+	assert(me != NULL && "message on assert");
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_ret()");
 	if (me->none == 0) {
 		//error("Mirtille_VirtualMachine::op_ret() ec=0x%X stack underflow", 0x8F);
@@ -78,38 +84,45 @@ void me_op_ret(Mirtille_VirtualMachine * me) {
 
 
 void me_op_jmp(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint16_t pcOffset = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint16_t pcOffset = //GET
+ fetchWordFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_jmp(0x%02X)", pcOffset);
 	me->instructions.pc = 1 + pcOffset;	
 }
 
 
 void me_op_jnz(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t i = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint8_t i = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_jnz(0x%02X)", i);
 	--(me->me_vmVariables[i]);
 	if (me->me_vmVariables[i] != 0) {
 		//op_jmp();
 	} else {
-		/*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+		//GET 
+		fetchWordFromInstructionsSet(&(me->instructions));
 	}
 }
 
 void me_op_condJmp(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t opcode = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
-  const uint8_t var = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint8_t opcode = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
+  const uint8_t var = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
   int16_t b = me->me_vmVariables[var];
 	int16_t a;
 
 	if (opcode & 0x80) {
 		//a = me->me_vmVariables[me->_scriptPtr.fetchByte()];
 	} else if (opcode & 0x40) {
-    a = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+    a = //GET
+ fetchWordFromInstructionsSet(&(me->instructions));
 	} else {
-    a = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+    a = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
 	}
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_condJmp(%d, 0x%02X, 0x%02X)", opcode, b, a);
 
@@ -163,31 +176,38 @@ void me_op_condJmp(Mirtille_VirtualMachine * me) {
 	if (expr) {
 		//op_jmp();
 	} else {
-		/*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+		//GET 
+		fetchWordFromInstructionsSet(&(me->instructions));
 	}
 
 }
+*/
 
 
 void me_op_selectVideoPage(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t frameBufferId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint8_t frameBufferId = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_selectVideoPage(%d)", frameBufferId);
 	//me_changePagePtr1(me->me_video, frameBufferId);
 }
 
 void me_op_fillVideoPage(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t pageId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
-	uint8_t color = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint8_t pageId = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
+	uint8_t color = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_fillVideoPage(%d, %d)", pageId, color);
 	//me_fillPage(me->me_video, pageId, color);
 }
 
 void me_op_copyVideoPage(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t srcPageId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
-	uint8_t dstPageId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint8_t srcPageId = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
+	uint8_t dstPageId = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_copyVideoPage(%d, %d)", srcPageId, dstPageId);
 	//me_copyPage(me->me_video, srcPageId, dstPageId, me->me_vmVariables[10]);
 }
@@ -196,8 +216,9 @@ void me_op_copyVideoPage(Mirtille_VirtualMachine * me) {
 uint32_t lastTimeStamp = 0;
 
 void me_op_blitFramebuffer(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t pageId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	/*uint8_t pageId = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_blitFramebuffer(%d)", pageId);
 	int getTimeStamp = 2;
   int32_t delay = getTimeStamp - lastTimeStamp;
@@ -216,62 +237,73 @@ void me_op_blitFramebuffer(Mirtille_VirtualMachine * me) {
 	me->me_vmVariables[0xF7] = 0;
 	if(me->me_video == NULL){
 		printf("NULL : me_updateDisplay(me->me_video, pageId);\n");
-	}
+	}*/
 	//me_updateDisplay(me->me_video, pageId);
 
 }
-
+/*
 void me_op_sub(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t i = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
-	uint8_t j = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint8_t i = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
+	uint8_t j = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_sub(0x%02X, 0x%02X)", i, j);
 	me->me_vmVariables[i] -= me->me_vmVariables[j];
 }
 
 void me_op_and(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t variableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
-	uint16_t n = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint8_t variableId = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
+	uint16_t n = //GET
+ fetchWordFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_and(0x%02X, %d)", variableId, n);
 	me->me_vmVariables[variableId] = (uint16_t)me->me_vmVariables[variableId] & n;
 }
 
 void me_op_or(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t variableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
-	uint16_t value = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint8_t variableId = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
+	uint16_t value = //GET
+ fetchWordFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_or(0x%02X, %d)", variableId, value);
 	me->me_vmVariables[variableId] = (uint16_t)me->me_vmVariables[variableId] | value;
 }
 
 
 void me_op_shl(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t variableId =		  /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
-	uint16_t leftShiftValue = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint8_t variableId = //GET 
+	fetchByteFromInstructionsSet(&(me->instructions));
+	uint16_t leftShiftValue = //GET
+ fetchWordFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_shl(0x%02X, %d)", variableId, leftShiftValue);
 	me->me_vmVariables[variableId] = (uint16_t)me->me_vmVariables[variableId] << leftShiftValue;
 }
 
 void me_op_shr(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint8_t variableId = /*GET*/ fetchByteFromInstructionsSet(&(me->instructions));
-	uint16_t rightShiftValue = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint8_t variableId = //GET
+ fetchByteFromInstructionsSet(&(me->instructions));
+	uint16_t rightShiftValue = //GET
+ fetchWordFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_shr(0x%02X, %d)", variableId, rightShiftValue);
 	me->me_vmVariables[variableId] = (uint16_t)me->me_vmVariables[variableId] >> rightShiftValue;
 }
-
+*/
 void me_op_updateMemList(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
-	uint16_t resourceId = /*GET*/ fetchWordFromInstructionsSet(&(me->instructions));
+	assert(me != NULL && "message on assert");
+	uint16_t resourceId = //GET
+ fetchWordFromInstructionsSet(&(me->instructions));
 	//debug(DBG_VM, "Mirtille_VirtualMachine::op_updateMemList(%d)", resourceId);
 
 }
 
 
 void me_inp_handleSpecialKeys(Mirtille_VirtualMachine * me) {
-	assert(me != NULL);
+	assert(me != NULL && "message on assert");
 	/*if (me->sys->input.pause) {
 			me->sys->input.pause = false;
 			while (!me->sys->input.pause) {
@@ -294,7 +326,7 @@ void me_inp_handleSpecialKeys(Mirtille_VirtualMachine * me) {
 }
 
 void me_saveOrLoad_VM(Mirtille_VirtualMachine * me, ME_Serializer *ser) {
-	assert(me != NULL);
+	assert(me != NULL && "message on assert");
 	assert(ser != NULL);
 	/*Serializer::Entry entries[] = {
 		SE_ARRAY(me->me_vmVariables, 0x100, Serializer::SES_INT16, VER(1)),
@@ -305,6 +337,6 @@ void me_saveOrLoad_VM(Mirtille_VirtualMachine * me, ME_Serializer *ser) {
 }
 
 void me_hostFrame(Mirtille_VirtualMachine *me){
-	assert(me != NULL);
+	assert(me != NULL && "message on assert");
 	// hostFrame
 }

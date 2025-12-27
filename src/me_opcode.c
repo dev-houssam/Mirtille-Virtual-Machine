@@ -109,6 +109,7 @@ void me_op_add(Mirtille_VirtualMachine *me){
 /*
 DEST := DEST + SRC;
 */
+    printf("AAAAAAAADDDDDDDD\n");
 }
 
 
@@ -3749,8 +3750,35 @@ void me_op_fcomip(Mirtille_VirtualMachine *me){
 
 
 void me_op_fcomp(Mirtille_VirtualMachine *me){
-//
+//FCOM/FCOMP/FCOMPP — Compare Floating-Point Values
 /*
+Operation ¶
+
+CASE (relation of operands) OF
+    ST > SRC:
+                    C3, C2, C0 := 000;
+    ST < SRC:
+                    C3, C2, C0 := 001;
+    ST = SRC:
+                    C3, C2, C0 := 100;
+ESAC;
+IF ST(0) or SRC = NaN or unsupported format
+    THEN
+        #IA
+        IF FPUControlWord.IM = 1
+            THEN
+                C3, C2, C0 := 111;
+        FI;
+FI;
+IF Instruction = FCOMP
+    THEN
+        PopRegisterStack;
+FI;
+IF Instruction = FCOMPP
+    THEN
+        PopRegisterStack;
+        PopRegisterStack;
+FI;
 
 */
 }
@@ -3821,8 +3849,25 @@ FI;
 
 
 void me_op_fdivp(Mirtille_VirtualMachine *me){
-//
+//FDIV/FDIVP/FIDIV — Divide
 /*
+Operation ¶
+
+IF SRC = 0
+    THEN
+        #Z;
+    ELSE
+        IF Instruction is FIDIV
+            THEN
+                DEST := DEST / ConvertToDoubleExtendedPrecisionFP(SRC);
+            ELSE (* Source operand is floating-point value *)
+                DEST := DEST / SRC;
+        FI;
+FI;
+IF Instruction = FDIVP
+    THEN
+        PopRegisterStack;
+FI;
 
 */
 }
@@ -3845,8 +3890,11 @@ void me_op_fdivrp(Mirtille_VirtualMachine *me){
 
 
 void me_op_ffree(Mirtille_VirtualMachine *me){
-//
+//FFREE — Free Floating-Point Register
 /*
+Operation ¶
+
+TAG(i) := 11B;
 
 */
 }
@@ -4045,8 +4093,20 @@ void me_op_fldz(Mirtille_VirtualMachine *me){
 
 
 void me_op_fmul(Mirtille_VirtualMachine *me){
-//
+//FMUL/FMULP/FIMUL — Multiply
 /*
+Operation ¶
+
+IF Instruction = FIMUL
+    THEN
+        DEST := DEST ∗ ConvertToDoubleExtendedPrecisionFP(SRC);
+    ELSE (* Source operand is floating-point value *)
+        DEST := DEST ∗ SRC;
+FI;
+IF Instruction = FMULP
+    THEN
+        PopRegisterStack;
+FI;
 
 */
 }
@@ -4472,24 +4532,87 @@ void me_op_idiv(Mirtille_VirtualMachine *me){
 
 
 void me_op_imul(Mirtille_VirtualMachine *me){
-//
+//IMUL — Signed Multiply
 /*
+Operation ¶
+
+IF (NumberOfOperands = 1)
+    THEN IF (OperandSize = 8)
+        THEN
+            TMP_XP := AL ∗ SRC (* Signed multiplication; TMP_XP is a signed integer at twice the width of the SRC *);
+            AX := TMP_XP[15:0];
+            IF SignExtend(TMP_XP[7:0]) = TMP_XP
+                THEN CF := 0; OF := 0;
+                ELSE CF := 1; OF := 1; FI;
+        ELSE IF OperandSize = 16
+            THEN
+                TMP_XP := AX ∗ SRC (* Signed multiplication; TMP_XP is a signed integer at twice the width of the SRC *)
+                DX:AX := TMP_XP[31:0];
+                IF SignExtend(TMP_XP[15:0]) = TMP_XP
+                    THEN CF := 0; OF := 0;
+                    ELSE CF := 1; OF := 1; FI;
+            ELSE IF OperandSize = 32
+                THEN
+                    TMP_XP := EAX ∗ SRC (* Signed multiplication; TMP_XP is a signed integer at twice the width of the SRC*)
+                    EDX:EAX := TMP_XP[63:0];
+                    IF SignExtend(TMP_XP[31:0]) = TMP_XP
+                        THEN CF := 0; OF := 0;
+                        ELSE CF := 1; OF := 1; FI;
+                ELSE (* OperandSize = 64 *)
+                    TMP_XP := RAX ∗ SRC (* Signed multiplication; TMP_XP is a signed integer at twice the width of the SRC *)
+                    EDX:EAX := TMP_XP[127:0];
+                    IF SignExtend(TMP_XP[63:0]) = TMP_XP
+                        THEN CF := 0; OF := 0;
+                        ELSE CF := 1; OF := 1; FI;
+                FI;
+        FI;
+    ELSE IF (NumberOfOperands = 2)
+        THEN
+            TMP_XP := DEST ∗ SRC (* Signed multiplication; TMP_XP is a signed integer at twice the width of the SRC *)
+            DEST := TruncateToOperandSize(TMP_XP);
+            IF SignExtend(DEST) ≠ TMP_XP
+                THEN CF := 1; OF := 1;
+                ELSE CF := 0; OF := 0; FI;
+        ELSE (* NumberOfOperands = 3 *)
+            TMP_XP := SRC1 ∗ SRC2 (* Signed multiplication; TMP_XP is a signed integer at twice the width of the SRC1 *)
+            DEST := TruncateToOperandSize(TMP_XP);
+            IF SignExtend(DEST) ≠ TMP_XP
+                THEN CF := 1; OF := 1;
+                ELSE CF := 0; OF := 0; FI;
+    FI;
+FI;
 
 */
 }
 
 
 void me_op_in(Mirtille_VirtualMachine *me){
-//
+//IN — Input From Port
 /*
+Operation ¶
+
+IF ((PE = 1) and ((CPL > IOPL) or (VM = 1)))
+    THEN (* Protected mode with CPL > IOPL or virtual-8086 mode *)
+        IF (Any I/O Permission Bit for I/O port being accessed = 1)
+            THEN (* I/O operation is not allowed *)
+                #GP(0);
+            ELSE ( * I/O operation is allowed *)
+                DEST := SRC; (* Read from selected I/O port *)
+        FI;
+    ELSE (Real Mode or Protected Mode with CPL ≤ IOPL *)
+        DEST := SRC; (* Read from selected I/O port *)
+FI;
 
 */
 }
 
 
 void me_op_inc(Mirtille_VirtualMachine *me){
-//
+//INC — Increment by 1
 /*
+Operation ¶
+
+DEST := DEST + 1;
 
 */
 }
@@ -4512,24 +4635,153 @@ void me_op_incsspq(Mirtille_VirtualMachine *me){
 
 
 void me_op_ins(Mirtille_VirtualMachine *me){
-//
+//INS/INSB/INSW/INSD — Input from Port to String
 /*
+Operation ¶
+
+IF ((PE = 1) and ((CPL > IOPL) or (VM = 1)))
+    THEN (* Protected mode with CPL > IOPL or virtual-8086 mode *)
+        IF (Any I/O Permission Bit for I/O port being accessed = 1)
+            THEN (* I/O operation is not allowed *)
+                #GP(0);
+            ELSE (* I/O operation is allowed *)
+                DEST := SRC; (* Read from I/O port *)
+        FI;
+    ELSE (Real Mode or Protected Mode with CPL IOPL *)
+        DEST := SRC; (* Read from I/O port *)
+FI;
+Non-64-bit Mode:
+IF (Byte transfer)
+    THEN IF DF = 0
+        THEN (E)DI := (E)DI + 1;
+        ELSE (E)DI := (E)DI – 1; FI;
+    ELSE IF (Word transfer)
+        THENIFDF =0
+            THEN (E)DI := (E)DI + 2;
+            ELSE (E)DI := (E)DI – 2; FI;
+        ELSE (* Doubleword transfer *)
+            THEN IF DF = 0
+                THEN (E)DI := (E)DI + 4;
+                ELSE (E)DI := (E)DI – 4; FI;
+        FI;
+FI;
+FI64-bit Mode:
+IF (Byte transfer)
+    THEN IF DF = 0
+        THEN (E|R)DI := (E|R)DI + 1;
+        ELSE (E|R)DI := (E|R)DI – 1; FI;
+    ELSE IF (Word transfer)
+        THENIFDF =0
+            THEN (E)DI := (E)DI + 2;
+            ELSE (E)DI := (E)DI – 2; FI;
+        ELSE (* Doubleword transfer *)
+            THEN IF DF = 0
+                THEN (E|R)DI := (E|R)DI + 4;
+                ELSE (E|R)DI := (E|R)DI – 4; FI;
+        FI;
+FI;
 
 */
 }
 
 
 void me_op_insb(Mirtille_VirtualMachine *me){
-//
+//INS/INSB/INSW/INSD — Input from Port to String
 /*
+Operation ¶
+
+IF ((PE = 1) and ((CPL > IOPL) or (VM = 1)))
+    THEN (* Protected mode with CPL > IOPL or virtual-8086 mode *)
+        IF (Any I/O Permission Bit for I/O port being accessed = 1)
+            THEN (* I/O operation is not allowed *)
+                #GP(0);
+            ELSE (* I/O operation is allowed *)
+                DEST := SRC; (* Read from I/O port *)
+        FI;
+    ELSE (Real Mode or Protected Mode with CPL IOPL *)
+        DEST := SRC; (* Read from I/O port *)
+FI;
+Non-64-bit Mode:
+IF (Byte transfer)
+    THEN IF DF = 0
+        THEN (E)DI := (E)DI + 1;
+        ELSE (E)DI := (E)DI – 1; FI;
+    ELSE IF (Word transfer)
+        THENIFDF =0
+            THEN (E)DI := (E)DI + 2;
+            ELSE (E)DI := (E)DI – 2; FI;
+        ELSE (* Doubleword transfer *)
+            THEN IF DF = 0
+                THEN (E)DI := (E)DI + 4;
+                ELSE (E)DI := (E)DI – 4; FI;
+        FI;
+FI;
+FI64-bit Mode:
+IF (Byte transfer)
+    THEN IF DF = 0
+        THEN (E|R)DI := (E|R)DI + 1;
+        ELSE (E|R)DI := (E|R)DI – 1; FI;
+    ELSE IF (Word transfer)
+        THENIFDF =0
+            THEN (E)DI := (E)DI + 2;
+            ELSE (E)DI := (E)DI – 2; FI;
+        ELSE (* Doubleword transfer *)
+            THEN IF DF = 0
+                THEN (E|R)DI := (E|R)DI + 4;
+                ELSE (E|R)DI := (E|R)DI – 4; FI;
+        FI;
+FI;
 
 */
 }
 
 
 void me_op_insd(Mirtille_VirtualMachine *me){
-//
+//INS/INSB/INSW/INSD — Input from Port to String
 /*
+Operation ¶
+
+IF ((PE = 1) and ((CPL > IOPL) or (VM = 1)))
+    THEN (* Protected mode with CPL > IOPL or virtual-8086 mode *)
+        IF (Any I/O Permission Bit for I/O port being accessed = 1)
+            THEN (* I/O operation is not allowed *)
+                #GP(0);
+            ELSE (* I/O operation is allowed *)
+                DEST := SRC; (* Read from I/O port *)
+        FI;
+    ELSE (Real Mode or Protected Mode with CPL IOPL *)
+        DEST := SRC; (* Read from I/O port *)
+FI;
+Non-64-bit Mode:
+IF (Byte transfer)
+    THEN IF DF = 0
+        THEN (E)DI := (E)DI + 1;
+        ELSE (E)DI := (E)DI – 1; FI;
+    ELSE IF (Word transfer)
+        THENIFDF =0
+            THEN (E)DI := (E)DI + 2;
+            ELSE (E)DI := (E)DI – 2; FI;
+        ELSE (* Doubleword transfer *)
+            THEN IF DF = 0
+                THEN (E)DI := (E)DI + 4;
+                ELSE (E)DI := (E)DI – 4; FI;
+        FI;
+FI;
+FI64-bit Mode:
+IF (Byte transfer)
+    THEN IF DF = 0
+        THEN (E|R)DI := (E|R)DI + 1;
+        ELSE (E|R)DI := (E|R)DI – 1; FI;
+    ELSE IF (Word transfer)
+        THENIFDF =0
+            THEN (E)DI := (E)DI + 2;
+            ELSE (E)DI := (E)DI – 2; FI;
+        ELSE (* Doubleword transfer *)
+            THEN IF DF = 0
+                THEN (E|R)DI := (E|R)DI + 4;
+                ELSE (E|R)DI := (E|R)DI – 4; FI;
+        FI;
+FI;
 
 */
 }
@@ -4552,8 +4804,562 @@ void me_op_insw(Mirtille_VirtualMachine *me){
 
 
 void me_op_int(Mirtille_VirtualMachine *me){
-//
+//INT n/INTO/INT3/INT1 — Call to Interrupt Procedure
 /*
+Operation ¶
+
+The following operational description applies not only to the INT n, INTO, INT3, or INT1 instructions, but also to
+external interrupts, nonmaskable interrupts (NMIs), and exceptions. Some of these events push onto the stack an
+error code.
+The operational description specifies numerous checks whose failure may result in delivery of a nested exception.
+In these cases, the original event is not delivered.
+The operational description specifies the error code delivered by any nested exception. In some cases, the error
+code is specified with a pseudofunction error_code(num,idt,ext), where idt and ext are bit values. The pseudofunc-
+tion produces an error code as follows: (1) if idt is 0, the error code is (num & FCH) | ext; (2) if idt is 1, the error
+code is (num « 3) | 2 | ext.
+In many cases, the pseudofunction error_code is invoked with a pseudovariable EXT. The value of EXT depends on
+the nature of the event whose delivery encountered a nested exception: if that event is a software interrupt (INT n,
+INT3, or INTO), EXT is 0; otherwise (including INT1), EXT is 1.
+IF PE = 0
+    THEN
+        GOTO REAL-ADDRESS-MODE;
+    ELSE (* PE = 1 *)
+        IF (EFLAGS.VM = 1 AND CR4.VME = 0 AND IOPL < 3 AND INT n)
+            THEN
+                    #GP(0); (* Bit 0 of error code is 0 because INT n *)
+            ELSE
+                IF (EFLAGS.VM = 1 AND CR4.VME = 1 AND INT n)
+                        THEN
+                            Consult bit n of the software interrupt redirection bit map in the TSS;
+                            IF bit n is clear
+                                THEN (* redirect interrupt to 8086 program interrupt handler *)
+                                    Push EFLAGS[15:0]; (* if IOPL < 3, save VIF in IF position and save IOPL position as 3 *)
+                                    Push CS;
+                                    Push IP;
+                                    IF IOPL = 3
+                                        THEN IF := 0; (* Clear interrupt flag *)
+                                        ELSE VIF := 0; (* Clear virtual interrupt flag *)
+                                    FI;
+                                    TF := 0; (* Clear trap flag *)
+                                    load CS and EIP (lower 16 bits only) from entry n in interrupt vector table referenced from TSS;
+                                ELSE
+                                    IF IOPL = 3
+                                        THEN GOTO PROTECTED-MODE;
+                                        ELSE #GP(0); (* Bit 0 of error code is 0 because INT n *)
+                                    FI;
+                            FI;
+                        ELSE (* Protected mode, IA-32e mode, or virtual-8086 mode interrupt *)
+                            IF (IA32_EFER.LMA = 0)
+                                THEN (* Protected mode, or virtual-8086 mode interrupt *)
+                                    GOTO PROTECTED-MODE;
+                                ELSE (* IA-32e mode interrupt *)
+                                GOTO IA-32e-MODE;
+                            FI;
+                FI;
+        FI;
+FI;
+REAL-ADDRESS-MODE:
+    IF ((vector_number « 2) + 3) is not within IDT limit
+        THEN #GP; FI;
+    IF stack not large enough for a 6-byte return information
+        THEN #SS; FI;
+    Push (EFLAGS[15:0]);
+    IF := 0; (* Clear interrupt flag *)
+    TF := 0; (* Clear trap flag *)
+    AC := 0; (* Clear AC flag *)
+    Push(CS);
+    Push(IP);
+    (* No error codes are pushed in real-address mode*)
+    CS := IDT(Descriptor (vector_number « 2), selector));
+    EIP := IDT(Descriptor (vector_number « 2), offset)); (* 16 bit offset AND 0000FFFFH *)
+END;
+PROTECTED-MODE:
+    IF ((vector_number « 3) + 7) is not within IDT limits
+    or selected IDT descriptor is not an interrupt-, trap-, or task-gate type
+        THEN #GP(error_code(vector_number,1,EXT)); FI;
+        (* idt operand to error_code set because vector is used *)
+    IF software interrupt (* Generated by INT n, INT3, or INTO; does not apply to INT1 *)
+        THEN
+            IF gate DPL < CPL (* PE = 1, DPL < CPL, software interrupt *)
+                THEN #GP(error_code(vector_number,1,0)); FI;
+                (* idt operand to error_code set because vector is used *)
+                (* ext operand to error_code is 0 because INT n, INT3, or INTO*)
+    FI;
+    IF gate not present
+        THEN #NP(error_code(vector_number,1,EXT)); FI;
+        (* idt operand to error_code set because vector is used *)
+    IF task gate (* Specified in the selected interrupt table descriptor *)
+        THEN GOTO TASK-GATE;
+        ELSE GOTO TRAP-OR-INTERRUPT-GATE; (* PE = 1, trap/interrupt gate *)
+    FI;
+END;
+IA-32e-MODE:
+    IF INTO and CS.L = 1 (64-bit mode)
+        THEN #UD;
+    FI;
+    IF ((vector_number « 4) + 15) is not in IDT limits
+    or selected IDT descriptor is not an interrupt-, or trap-gate type
+        THEN #GP(error_code(vector_number,1,EXT));
+        (* idt operand to error_code set because vector is used *)
+    FI;
+    IF software interrupt (* Generated by INT n, INT3, or INTO; does not apply to INT1 *)
+        THEN
+            IF gate DPL < CPL (* PE = 1, DPL < CPL, software interrupt *)
+                THEN #GP(error_code(vector_number,1,0));
+                (* idt operand to error_code set because vector is used *)
+                (* ext operand to error_code is 0 because INT n, INT3, or INTO*)
+            FI;
+    FI;
+    IF gate not present
+        THEN #NP(error_code(vector_number,1,EXT));
+        (* idt operand to error_code set because vector is used *)
+    FI;
+    GOTO TRAP-OR-INTERRUPT-GATE; (* Trap/interrupt gate *)
+END;
+TASK-GATE: (* PE = 1, task gate *)
+    Read TSS selector in task gate (IDT descriptor);
+        IF local/global bit is set to local or index not within GDT limits
+            THEN #GP(error_code(TSS selector,0,EXT)); FI;
+            (* idt operand to error_code is 0 because selector is used *)
+        Access TSS descriptor in GDT;
+        IF TSS descriptor specifies that the TSS is busy (low-order 5 bits set to 00001)
+            THEN #GP(error_code(TSS selector,0,EXT)); FI;
+            (* idt operand to error_code is 0 because selector is used *)
+        IF TSS not present
+            THEN #NP(error_code(TSS selector,0,EXT)); FI;
+            (* idt operand to error_code is 0 because selector is used *)
+    SWITCH-TASKS (with nesting) to TSS;
+    IF interrupt caused by fault with error code
+        THEN
+            IF stack limit does not allow push of error code
+                THEN #SS(EXT); FI;
+            Push(error code);
+    FI;
+    IF EIP not within code segment limit
+        THEN #GP(EXT); FI;
+END;
+TRAP-OR-INTERRUPT-GATE:
+    Read new code-segment selector for trap or interrupt gate (IDT descriptor);
+    IF new code-segment selector is NULL
+        THEN #GP(EXT); FI; (* Error code contains NULL selector *)
+    IF new code-segment selector is not within its descriptor table limits
+        THEN #GP(error_code(new code-segment selector,0,EXT)); FI;
+        (* idt operand to error_code is 0 because selector is used *)
+    Read descriptor referenced by new code-segment selector;
+    IF descriptor does not indicate a code segment or new code-segment DPL > CPL
+        THEN #GP(error_code(new code-segment selector,0,EXT)); FI;
+        (* idt operand to error_code is 0 because selector is used *)
+    IF new code-segment descriptor is not present,
+        THEN #NP(error_code(new code-segment selector,0,EXT)); FI;
+        (* idt operand to error_code is 0 because selector is used *)
+    IF new code segment is non-conforming with DPL < CPL
+        THEN
+            IF VM = 0
+                THEN
+                        GOTO INTER-PRIVILEGE-LEVEL-INTERRUPT;
+                        (* PE = 1, VM = 0, interrupt or trap gate, nonconforming code segment,
+                        DPL < CPL *)
+                ELSE (* VM = 1 *)
+                        IF new code-segment DPL ≠ 0
+                            THEN #GP(error_code(new code-segment selector,0,EXT));
+                            (* idt operand to error_code is 0 because selector is used *)
+                        GOTO INTERRUPT-FROM-VIRTUAL-8086-MODE; FI;
+                        (* PE = 1, interrupt or trap gate, DPL < CPL, VM = 1 *)
+            FI;
+        ELSE (* PE = 1, interrupt or trap gate, DPL ≥ CPL *)
+            IF VM = 1
+                THEN #GP(error_code(new code-segment selector,0,EXT));
+                (* idt operand to error_code is 0 because selector is used *)
+            IF new code segment is conforming or new code-segment DPL = CPL
+                THEN
+                        GOTO INTRA-PRIVILEGE-LEVEL-INTERRUPT;
+                ELSE (* PE = 1, interrupt or trap gate, nonconforming code segment, DPL > CPL *)
+                        #GP(error_code(new code-segment selector,0,EXT));
+                        (* idt operand to error_code is 0 because selector is used *)
+            FI;
+    FI;
+END;
+INTER-PRIVILEGE-LEVEL-INTERRUPT:
+    (* PE = 1, interrupt or trap gate, non-conforming code segment, DPL < CPL *)
+    IF (IA32_EFER.LMA = 0) (* Not IA-32e mode *)
+        THEN
+        (* Identify stack-segment selector for new privilege level in current TSS *)
+            IF current TSS is 32-bit
+                THEN
+                        TSSstackAddress := (new code-segment DPL « 3) + 4;
+                        IF (TSSstackAddress + 5) > current TSS limit
+                            THEN #TS(error_code(current TSS selector,0,EXT)); FI;
+                            (* idt operand to error_code is 0 because selector is used *)
+                        NewSS := 2 bytes loaded from (TSS base + TSSstackAddress + 4);
+                        NewESP := 4 bytes loaded from (TSS base + TSSstackAddress);
+                ELSE (* current TSS is 16-bit *)
+                        TSSstackAddress := (new code-segment DPL « 2) + 2
+                        IF (TSSstackAddress + 3) > current TSS limit
+                            THEN #TS(error_code(current TSS selector,0,EXT)); FI;
+                            (* idt operand to error_code is 0 because selector is used *)
+                        NewSS := 2 bytes loaded from (TSS base + TSSstackAddress + 2);
+                        NewESP := 2 bytes loaded from (TSS base + TSSstackAddress);
+            FI;
+            IF NewSS is NULL
+                THEN #TS(EXT); FI;
+            IF NewSS index is not within its descriptor-table limits
+            or NewSS RPL ≠ new code-segment DPL
+                THEN #TS(error_code(NewSS,0,EXT)); FI;
+                (* idt operand to error_code is 0 because selector is used *)
+            Read new stack-segment descriptor for NewSS in GDT or LDT;
+            IF new stack-segment DPL ≠ new code-segment DPL
+            or new stack-segment Type does not indicate writable data segment
+                THEN #TS(error_code(NewSS,0,EXT)); FI;
+                (* idt operand to error_code is 0 because selector is used *)
+            IF NewSS is not present
+                THEN #SS(error_code(NewSS,0,EXT)); FI;
+                (* idt operand to error_code is 0 because selector is used *)
+                NewSSP := IA32_PLi_SSP (* where i = new code-segment DPL *)
+        ELSE (* IA-32e mode *)
+            IF IDT-gate IST = 0
+                THEN TSSstackAddress := (new code-segment DPL « 3) + 4;
+                ELSE TSSstackAddress := (IDT gate IST « 3) + 28;
+            FI;
+            IF (TSSstackAddress + 7) > current TSS limit
+                THEN #TS(error_code(current TSS selector,0,EXT); FI;
+                (* idt operand to error_code is 0 because selector is used *)
+            NewRSP := 8 bytes loaded from (current TSS base + TSSstackAddress);
+            NewSS := new code-segment DPL; (* NULL selector with RPL = new CPL *)
+            IF IDT-gate IST = 0
+                THEN
+                        NewSSP := IA32_PLi_SSP (* where i = new code-segment DPL *)
+                ELSE
+                        NewSSPAddress = IA32_INTERRUPT_SSP_TABLE_ADDR + (IDT-gate IST « 3)
+                        (* Check if shadow stacks are enabled at CPL 0 *)
+                        IF ShadowStackEnabled(CPL 0)
+                            THEN NewSSP := 8 bytes loaded from NewSSPAddress; FI;
+            FI;
+    FI;
+    IF IDT gate is 32-bit
+            THEN
+                IF new stack does not have room for 24 bytes (error code pushed)
+                or 20 bytes (no error code pushed)
+                        THEN #SS(error_code(NewSS,0,EXT)); FI;
+                        (* idt operand to error_code is 0 because selector is used *)
+            FI
+        ELSE
+            IF IDT gate is 16-bit
+                THEN
+                        IF new stack does not have room for 12 bytes (error code pushed)
+                        or 10 bytes (no error code pushed);
+                            THEN #SS(error_code(NewSS,0,EXT)); FI;
+                            (* idt operand to error_code is 0 because selector is used *)
+            ELSE (* 64-bit IDT gate*)
+                IF StackAddress is non-canonical
+                        THEN #SS(EXT); FI; (* Error code contains NULL selector *)
+        FI;
+    FI;
+    IF (IA32_EFER.LMA = 0) (* Not IA-32e mode *)
+        THEN
+            IF instruction pointer from IDT gate is not within new code-segment limits
+                THEN #GP(EXT); FI; (* Error code contains NULL selector *)
+            ESP := NewESP;
+            SS := NewSS; (* Segment descriptor information also loaded *)
+        ELSE (* IA-32e mode *)
+            IF instruction pointer from IDT gate contains a non-canonical address
+                THEN #GP(EXT); FI; (* Error code contains NULL selector *)
+            RSP := NewRSP & FFFFFFFFFFFFFFF0H;
+            SS := NewSS;
+    FI;
+    IF IDT gate is 32-bit
+        THEN
+            CS:EIP := Gate(CS:EIP); (* Segment descriptor information also loaded *)
+        ELSE
+            IF IDT gate 16-bit
+                THEN
+                        CS:IP := Gate(CS:IP);
+                        (* Segment descriptor information also loaded *)
+                ELSE (* 64-bit IDT gate *)
+                        CS:RIP := Gate(CS:RIP);
+                        (* Segment descriptor information also loaded *)
+            FI;
+    FI;
+    IF IDT gate is 32-bit
+            THEN
+                Push(far pointer to old stack);
+                (* Old SS and ESP, 3 words padded to 4 *)
+                Push(EFLAGS);
+                Push(far pointer to return instruction);
+                (* Old CS and EIP, 3 words padded to 4 *)
+                Push(ErrorCode); (* If needed, 4 bytes *)
+            ELSE
+                IF IDT gate 16-bit
+                        THEN
+                            Push(far pointer to old stack);
+                            (* Old SS and SP, 2 words *)
+                            Push(EFLAGS(15:0]);
+                            Push(far pointer to return instruction);
+                            (* Old CS and IP, 2 words *)
+                            Push(ErrorCode); (* If needed, 2 bytes *)
+                        ELSE (* 64-bit IDT gate *)
+                            Push(far pointer to old stack);
+                            (* Old SS and SP, each an 8-byte push *)
+                            Push(RFLAGS); (* 8-byte push *)
+                            Push(far pointer to return instruction);
+                            (* Old CS and RIP, each an 8-byte push *)
+                            Push(ErrorCode); (* If needed, 8-bytes *)
+            FI;
+    FI;
+    IF ShadowStackEnabled(CPL) AND CPL = 3
+        THEN
+            IF IA32_EFER.LMA = 0
+                THEN IA32_PL3_SSP := SSP;
+                ELSE (* adjust so bits 63:N get the value of bit N–1, where N is the CPU’s maximum linear-address width *)
+                        IA32_PL3_SSP := LA_adjust(SSP);
+            FI;
+    FI;
+    CPL := new code-segment DPL;
+    CS(RPL) := CPL;
+    IF ShadowStackEnabled(CPL)
+        oldSSP := SSP
+        SSP := NewSSP
+        IF SSP & 0x07 != 0
+            THEN #GP(0); FI;
+        (* Token and CS:LIP:oldSSP pushed on shadow stack must be contained in a naturally aligned 32-byte region *)
+        IF (SSP & ~0x1F) != ((SSP – 24) & ~0x1F)
+            #GP(0); FI;
+        IF ((IA32_EFER.LMA and CS.L) = 0 AND SSP[63:32] != 0)
+            THEN #GP(0); FI;
+        expected_token_value = SSP (* busy bit - bit position 0 - must be clear *)
+        new_token_value = SSP | BUSY_BIT (* Set the busy bit *)
+        IF shadow_stack_lock_cmpxchg8b(SSP, new_token_value, expected_token_value) != expected_token_value
+            THEN #GP(0); FI;
+        IF oldSS.DPL != 3
+            ShadowStackPush8B(oldCS); (* Padded with 48 high-order bits of 0 *)
+            ShadowStackPush8B(oldCSBASE + oldRIP); (* Padded with 32 high-order bits of 0 for 32 bit LIP*)
+            ShadowStackPush8B(oldSSP);
+        FI;
+    FI;
+    IF EndbranchEnabled (CPL)
+        IA32_S_CET.TRACKER = WAIT_FOR_ENDBRANCH;
+        IA32_S_CET.SUPPRESS = 0
+    FI;
+    IF IDT gate is interrupt gate
+        THEN IF := 0 (* Interrupt flag set to 0, interrupts disabled *); FI;
+    TF := 0;
+    VM := 0;
+    RF := 0;
+    NT := 0;
+END;
+INTERRUPT-FROM-VIRTUAL-8086-MODE:
+    (* Identify stack-segment selector for privilege level 0 in current TSS *)
+    IF current TSS is 32-bit
+        THEN
+            IF TSS limit < 9
+                THEN #TS(error_code(current TSS selector,0,EXT)); FI;
+                (* idt operand to error_code is 0 because selector is used *)
+            NewSS := 2 bytes loaded from (current TSS base + 8);
+            NewESP := 4 bytes loaded from (current TSS base + 4);
+        ELSE (* current TSS is 16-bit *)
+            IF TSS limit < 5
+                THEN #TS(error_code(current TSS selector,0,EXT)); FI;
+                (* idt operand to error_code is 0 because selector is used *)
+            NewSS := 2 bytes loaded from (current TSS base + 4);
+            NewESP := 2 bytes loaded from (current TSS base + 2);
+    FI;
+    IF NewSS is NULL
+        THEN #TS(EXT); FI; (* Error code contains NULL selector *)
+    IF NewSS index is not within its descriptor table limits
+    or NewSS RPL ≠ 0
+        THEN #TS(error_code(NewSS,0,EXT)); FI;
+        (* idt operand to error_code is 0 because selector is used *)
+    Read new stack-segment descriptor for NewSS in GDT or LDT;
+    IF new stack-segment DPL ≠ 0 or stack segment does not indicate writable data segment
+        THEN #TS(error_code(NewSS,0,EXT)); FI;
+        (* idt operand to error_code is 0 because selector is used *)
+    IF new stack segment not present
+        THEN #SS(error_code(NewSS,0,EXT)); FI;
+        (* idt operand to error_code is 0 because selector is used *)
+    NewSSP := IA32_PL0_SSP (* the new code-segment DPL must be 0 *)
+    IF IDT gate is 32-bit
+        THEN
+            IF new stack does not have room for 40 bytes (error code pushed)
+            or 36 bytes (no error code pushed)
+                THEN #SS(error_code(NewSS,0,EXT)); FI;
+                (* idt operand to error_code is 0 because selector is used *)
+        ELSE (* IDT gate is 16-bit)
+            IF new stack does not have room for 20 bytes (error code pushed)
+            or 18 bytes (no error code pushed)
+                THEN #SS(error_code(NewSS,0,EXT)); FI;
+                (* idt operand to error_code is 0 because selector is used *)
+    FI;
+    IF instruction pointer from IDT gate is not within new code-segment limits
+        THEN #GP(EXT); FI; (* Error code contains NULL selector *)
+    tempEFLAGS := EFLAGS;
+    VM := 0;
+    TF := 0;
+    RF := 0;
+    NT := 0;
+    IF service through interrupt gate
+        THEN IF = 0; FI;
+    TempSS := SS;
+    TempESP := ESP;
+    SS := NewSS;
+    ESP := NewESP;
+    (* Following pushes are 16 bits for 16-bit IDT gates and 32 bits for 32-bit IDT gates;
+    Segment selector pushes in 32-bit mode are padded to two words *)
+    Push(GS);
+    Push(FS);
+    Push(DS);
+    Push(ES);
+    Push(TempSS);
+    Push(TempESP);
+    Push(TempEFlags);
+    Push(CS);
+    Push(EIP);
+    GS := 0; (* Segment registers made NULL, invalid for use in protected mode *)
+    FS := 0;
+    DS := 0;
+    ES := 0;
+    CS := Gate(CS); (* Segment descriptor information also loaded *)
+    CS(RPL) := 0;
+    CPL := 0;
+    IF IDT gate is 32-bit
+        THEN
+            EIP := Gate(instruction pointer);
+        ELSE (* IDT gate is 16-bit *)
+            EIP := Gate(instruction pointer) AND 0000FFFFH;
+    FI;
+    IF ShadowStackEnabled(0)
+        oldSSP := SSP
+        SSP := NewSSP
+        IF SSP & 0x07 != 0
+            THEN #GP(0); FI;
+        (* Token and CS:LIP:oldSSP pushed on shadow stack must be contained in a naturally aligned 32-byte region *)
+        IF (SSP & ~0x1F) != ((SSP – 24) & ~0x1F)
+            #GP(0); FI;
+    IF ((IA32_EFER.LMA and CS.L) = 0 AND SSP[63:32] != 0)
+        THEN #GP(0); FI;
+    expected_token_value = SSP (* busy bit - bit position 0 - must be clear *)
+    new_token_value = SSP | BUSY_BIT (* Set the busy bit *)
+    IF shadow_stack_lock_cmpxchg8b(SSP, new_token_value, expected_token_value) != expected_token_value
+        THEN #GP(0); FI;
+    FI;
+    IF EndbranchEnabled (CPL)
+        IA32_S_CET.TRACKER = WAIT_FOR_ENDBRANCH;
+        IA32_S_CET.SUPPRESS = 0
+    FI;
+(* Start execution of new routine in Protected Mode *)
+END;
+INTRA-PRIVILEGE-LEVEL-INTERRUPT:
+    NewSSP = SSP;
+    CHECK_SS_TOKEN = 0
+    (* PE = 1, DPL = CPL or conforming segment *)
+    IF IA32_EFER.LMA = 1 (* IA-32e mode *)
+        IF IDT-descriptor IST ≠ 0
+            THEN
+                TSSstackAddress := (IDT-descriptor IST « 3) + 28;
+                IF (TSSstackAddress + 7) > TSS limit
+                        THEN #TS(error_code(current TSS selector,0,EXT)); FI;
+                        (* idt operand to error_code is 0 because selector is used *)
+                NewRSP := 8 bytes loaded from (current TSS base + TSSstackAddress);
+            ELSE NewRSP := RSP;
+        FI;
+        IF IDT-descriptor IST ≠ 0
+            IF ShadowStackEnabled(CPL)
+                THEN
+                        NewSSPAddress = IA32_INTERRUPT_SSP_TABLE_ADDR + (IDT gate IST « 3)
+                        NewSSP := 8 bytes loaded from NewSSPAddress
+                        CHECK_SS_TOKEN = 1
+            FI;
+        FI;
+    FI;
+    IF 32-bit gate (* implies IA32_EFER.LMA = 0 *)
+        THEN
+            IF current stack does not have room for 16 bytes (error code pushed)
+            or 12 bytes (no error code pushed)
+                THEN #SS(EXT); FI; (* Error code contains NULL selector *)
+        ELSE IF 16-bit gate (* implies IA32_EFER.LMA = 0 *)
+            IF current stack does not have room for 8 bytes (error code pushed)
+            or 6 bytes (no error code pushed)
+                THEN #SS(EXT); FI; (* Error code contains NULL selector *)
+        ELSE (* IA32_EFER.LMA = 1, 64-bit gate*)
+                IF NewRSP contains a non-canonical address
+                        THEN #SS(EXT); (* Error code contains NULL selector *)
+        FI;
+    FI;
+    IF (IA32_EFER.LMA = 0) (* Not IA-32e mode *)
+        THEN
+            IF instruction pointer from IDT gate is not within new code-segment limit
+                THEN #GP(EXT); FI; (* Error code contains NULL selector *)
+        ELSE
+            IF instruction pointer from IDT gate contains a non-canonical address
+                THEN #GP(EXT); FI; (* Error code contains NULL selector *)
+            RSP := NewRSP & FFFFFFFFFFFFFFF0H;
+    FI;
+    IF IDT gate is 32-bit (* implies IA32_EFER.LMA = 0 *)
+        THEN
+            Push (EFLAGS);
+            Push (far pointer to return instruction); (* 3 words padded to 4 *)
+            CS:EIP := Gate(CS:EIP); (* Segment descriptor information also loaded *)
+            Push (ErrorCode); (* If any *)
+        ELSE
+            IF IDT gate is 16-bit (* implies IA32_EFER.LMA = 0 *)
+                THEN
+                        Push (FLAGS);
+                        Push (far pointer to return location); (* 2 words *)
+                        CS:IP := Gate(CS:IP);
+                        (* Segment descriptor information also loaded *)
+                        Push (ErrorCode); (* If any *)
+                ELSE (* IA32_EFER.LMA = 1, 64-bit gate*)
+                        Push(far pointer to old stack);
+                        (* Old SS and SP, each an 8-byte push *)
+                        Push(RFLAGS); (* 8-byte push *)
+                        Push(far pointer to return instruction);
+                        (* Old CS and RIP, each an 8-byte push *)
+                        Push(ErrorCode); (* If needed, 8 bytes *)
+                        CS:RIP := GATE(CS:RIP);
+                        (* Segment descriptor information also loaded *)
+            FI;
+    FI;
+    CS(RPL) := CPL;
+    IF ShadowStackEnabled(CPL)
+        IF CHECK_SS_TOKEN == 1
+            THEN
+                IF NewSSP & 0x07 != 0
+                        THEN #GP(0); FI;
+        (* Token and CS:LIP:oldSSP pushed on shadow stack must be contained in a naturally aligned 32-byte region *)
+        IF (NewSSP & ~0x1F) != ((NewSSP – 24) & ~0x1F)
+            #GP(0); FI;
+                IF ((IA32_EFER.LMA and CS.L) = 0 AND NewSSP[63:32] != 0)
+                        THEN #GP(0); FI;
+                expected_token_value = NewSSP (* busy bit - bit position 0 - must be clear *)
+                new_token_value = NewSSP | BUSY_BIT (* Set the busy bit *)
+                IF shadow_stack_lock_cmpxchg8b(NewSSP, new_token_value, expected_token_value) != expected_token_value
+                        THEN #GP(0); FI;
+        FI;
+        (* Align to next 8 byte boundary *)
+        tempSSP = SSP;
+        Shadow_stack_store 4 bytes of 0 to (NewSSP − 4)
+        SSP = newSSP & 0xFFFFFFFFFFFFFFF8H;
+        (* push cs:lip:ssp on shadow stack *)
+        ShadowStackPush8B(oldCS); (* Padded with 48 high-order bits of 0 *)
+        ShadowStackPush8B(oldCSBASE + oldRIP); (* Padded with 32 high-order bits of 0 for 32 bit LIP*)
+        ShadowStackPush8B(tempSSP);
+    FI;
+    IF EndbranchEnabled (CPL)
+        IF CPL = 3
+            THEN
+                IA32_U_CET.TRACKER = WAIT_FOR_ENDBRANCH
+                IA32_U_CET.SUPPRESS = 0
+            ELSE
+                IA32_S_CET.TRACKER = WAIT_FOR_ENDBRANCH
+                IA32_S_CET.SUPPRESS = 0
+        FI;
+    FI;
+    IF IDT gate is interrupt gate
+        THEN IF := 0; FI; (* Interrupt flag set to 0; interrupts disabled *)
+    TF := 0;
+    NT := 0;
+    VM := 0;
+    RF := 0;
+END;
+
 
 */
 }
@@ -4632,16 +5438,265 @@ void me_op_iretq(Mirtille_VirtualMachine *me){
 
 
 void me_op_jmp(Mirtille_VirtualMachine *me){
-//
+//JMP — Jump
 /*
+Operation ¶
+
+IF near jump
+    IF 64-bit Mode
+            THEN
+                    IF near relative jump
+                        THEN
+                            tempRIP := RIP + DEST; (* RIP is instruction following JMP instruction*)
+                        ELSE (* Near absolute jump *)
+                            tempRIP := DEST;
+                    FI;
+            ELSE
+                    IF near relative jump
+                        THEN
+                            tempEIP := EIP + DEST; (* EIP is instruction following JMP instruction*)
+                        ELSE (* Near absolute jump *)
+                            tempEIP := DEST;
+                    FI;
+    FI;
+    IF (IA32_EFER.LMA = 0 or target mode = Compatibility mode)
+    and tempEIP outside code segment limit
+            THEN #GP(0); FI
+    IF 64-bit mode and tempRIP is not canonical
+            THEN #GP(0);
+    FI;
+    IF OperandSize = 32
+                THEN
+                    EIP := tempEIP;
+                ELSE
+                    IF OperandSize = 16
+                            THEN (* OperandSize = 16 *)
+                                    EIP := tempEIP AND 0000FFFFH;
+                                ELSE (* OperandSize = 64)
+                                    RIP := tempRIP;
+                    FI;
+        FI;
+    IF (JMP near indirect, absolute indirect)
+            IF EndbranchEnabledAndNotSuppressed(CPL)
+                    IF CPL = 3
+                            THEN
+                                    IF ( no 3EH prefix OR IA32_U_CET.NO_TRACK_EN == 0 )
+                                        THEN
+                                            IA32_U_CET.TRACKER = WAIT_FOR_ENDBRANCH
+                                    FI;
+                            ELSE
+                                    IF ( no 3EH prefix OR IA32_S_CET.NO_TRACK_EN == 0 )
+                                        THEN
+                                            IA32_S_CET.TRACKER = WAIT_FOR_ENDBRANCH
+                                    FI;
+                    FI;
+            FI;
+    FI;
+FI;
+IF far jump and (PE = 0 or (PE = 1 AND VM = 1)) (* Real-address or virtual-8086 mode *)
+        THEN
+                tempEIP := DEST(Offset); (* DEST is ptr16:32 or [m16:32] *)
+                IF tempEIP is beyond code segment limit
+                    THEN #GP(0); FI;
+                CS := DEST(segment selector); (* DEST is ptr16:32 or [m16:32] *)
+                IF OperandSize = 32
+                        THEN
+                            EIP := tempEIP; (* DEST is ptr16:32 or [m16:32] *)
+                        ELSE (* OperandSize = 16 *)
+                            EIP := tempEIP AND 0000FFFFH; (* Clear upper 16 bits *)
+                FI;
+FI;
+IF far jump and (PE = 1 and VM = 0)
+(* IA-32e mode or protected mode, not virtual-8086 mode *)
+        THEN
+                IF effective address in the CS, DS, ES, FS, GS, or SS segment is illegal
+            or segment selector in target operand NULL
+                            THEN #GP(0); FI;
+                IF segment selector index not within descriptor table limits
+                    THEN #GP(new selector); FI;
+            Read type and access rights of segment descriptor;
+            IF (IA32_EFER.LMA = 0)
+                    THEN
+                            IF segment type is not a conforming or nonconforming code
+                            segment, call gate, task gate, or TSS
+                                    THEN #GP(segment selector); FI;
+                    ELSE
+                            IF segment type is not a conforming or nonconforming code segment
+                            call gate
+                                    THEN #GP(segment selector); FI;
+            FI;
+            Depending on type and access rights:
+                    GO TO CONFORMING-CODE-SEGMENT;
+                    GO TO NONCONFORMING-CODE-SEGMENT;
+                    GO TO CALL-GATE;
+                    GO TO TASK-GATE;
+                    GO TO TASK-STATE-SEGMENT;
+        ELSE
+                #GP(segment selector);
+FI;
+CONFORMING-CODE-SEGMENT:
+    IF L-Bit = 1 and D-BIT = 1 and IA32_EFER.LMA = 1
+            THEN GP(new code segment selector); FI;
+        IF DPL > CPL
+            THEN #GP(segment selector); FI;
+        IF segment not present
+            THEN #NP(segment selector); FI;
+    tempEIP := DEST(Offset);
+    IF OperandSize = 16
+                THEN tempEIP := tempEIP AND 0000FFFFH;
+    FI;
+    IF (IA32_EFER.LMA = 0 or target mode = Compatibility mode) and
+    tempEIP outside code segment limit
+            THEN #GP(0); FI
+    IF tempEIP is non-canonical
+            THEN #GP(0); FI;
+    IF ShadowStackEnabled(CPL)
+            IF (IA32_EFER.LMA and DEST(segment selector).L) = 0
+                    (* If target is legacy or compatibility mode then the SSP must be in low 4GB *)
+                    IF (SSP & 0xFFFFFFFF00000000 != 0)
+                            THEN #GP(0); FI;
+            FI;
+    FI;
+    CS := DEST[segment selector]; (* Segment descriptor information also loaded *)
+    CS(RPL) := CPL
+    EIP := tempEIP;
+    IF EndbranchEnabled(CPL)
+            IF CPL = 3
+                    THEN
+                            IA32_U_CET.TRACKER = WAIT_FOR_ENDBRANCH
+                            IA32_U_CET.SUPPRESS = 0
+                    ELSE
+                            IA32_S_CET.TRACKER = WAIT_FOR_ENDBRANCH
+                            IA32_S_CET.SUPPRESS = 0
+            FI;
+    FI;
+END;
+NONCONFORMING-CODE-SEGMENT:
+    IF L-Bit = 1 and D-BIT = 1 and IA32_EFER.LMA = 1
+            THEN GP(new code segment selector); FI;
+    IF (RPL > CPL) OR (DPL ≠ CPL)
+            THEN #GP(code segment selector); FI;
+    IF segment not present
+            THEN #NP(segment selector); FI;
+    tempEIP := DEST(Offset);
+    IF OperandSize = 16
+                THEN tempEIP := tempEIP AND 0000FFFFH; FI;
+    IF (IA32_EFER.LMA = 0 OR target mode = Compatibility mode)
+    and tempEIP outside code segment limit
+            THEN #GP(0); FI
+    IF tempEIP is non-canonical THEN #GP(0); FI;
+    IF ShadowStackEnabled(CPL)
+            IF (IA32_EFER.LMA and DEST(segment selector).L) = 0
+                    (* If target is legacy or compatibility mode then the SSP must be in low 4GB *)
+                    IF (SSP & 0xFFFFFFFF00000000 != 0)
+                            THEN #GP(0); FI;
+            FI;
+    FI;
+    CS := DEST[segment selector]; (* Segment descriptor information also loaded *)
+    CS(RPL) := CPL;
+    EIP := tempEIP;
+    IF EndbranchEnabled(CPL)
+            IF CPL = 3
+                    THEN
+                            IA32_U_CET.TRACKER = WAIT_FOR_ENDBRANCH
+                            IA32_U_CET.SUPPRESS = 0
+                    ELSE
+                            IA32_S_CET.TRACKER = WAIT_FOR_ENDBRANCH
+                            IA32_S_CET.SUPPRESS = 0
+            FI;
+    FI;
+END;
+CALL-GATE:
+    IF call gate DPL < CPL
+    or call gate DPL < call gate segment-selector RPL
+                    THEN #GP(call gate selector); FI;
+    IF call gate not present
+            THEN #NP(call gate selector); FI;
+    IF call gate code-segment selector is NULL
+            THEN #GP(0); FI;
+    IF call gate code-segment selector index outside descriptor table limits
+            THEN #GP(code segment selector); FI;
+    Read code segment descriptor;
+    IF code-segment segment descriptor does not indicate a code segment
+    or code-segment segment descriptor is conforming and DPL > CPL
+    or code-segment segment descriptor is non-conforming and DPL ≠ CPL
+                    THEN #GP(code segment selector); FI;
+    IF IA32_EFER.LMA = 1 and (code-segment descriptor is not a 64-bit code segment
+    or code-segment segment descriptor has both L-Bit and D-bit set)
+                    THEN #GP(code segment selector); FI;
+    IF code segment is not present
+            THEN #NP(code-segment selector); FI;
+        tempEIP := DEST(Offset);
+        IF GateSize = 16
+                THEN tempEIP := tempEIP AND 0000FFFFH; FI;
+    IF (IA32_EFER.LMA = 0 OR target mode = Compatibility mode) AND tempEIP
+    outside code segment limit
+            THEN #GP(0); FI
+    CS := DEST[SegmentSelector]; (* Segment descriptor information also loaded *)
+    CS(RPL) := CPL;
+    EIP := tempEIP;
+    IF EndbranchEnabled(CPL)
+            IF CPL = 3
+                    THEN
+                            IA32_U_CET.TRACKER = WAIT_FOR_ENDBRANCH;
+                            IA32_U_CET.SUPPRESS = 0
+                    ELSE
+                            IA32_S_CET.TRACKER = WAIT_FOR_ENDBRANCH;
+                            IA32_S_CET.SUPPRESS = 0
+            FI;
+    FI;
+END;
+TASK-GATE:
+    IF task gate DPL < CPL
+    or task gate DPL < task gate segment-selector RPL
+            THEN #GP(task gate selector); FI;
+    IF task gate not present
+            THEN #NP(gate selector); FI;
+    Read the TSS segment selector in the task-gate descriptor;
+    IF TSS segment selector local/global bit is set to local
+    or index not within GDT limits
+    or descriptor is not a TSS segment
+    or TSS descriptor specifies that the TSS is busy
+            THEN #GP(TSS selector); FI;
+        IF TSS not present
+            THEN #NP(TSS selector); FI;
+        SWITCH-TASKS to TSS;
+        IF EIP not within code segment limit
+            THEN #GP(0); FI;
+END;
+TASK-STATE-SEGMENT:
+    IF TSS DPL < CPL
+    or TSS DPL < TSS segment-selector RPL
+    or TSS descriptor indicates TSS not available
+            THEN #GP(TSS selector); FI;
+    IF TSS is not present
+            THEN #NP(TSS selector); FI;
+    SWITCH-TASKS to TSS;
+    IF EIP not within code segment limit
+            THEN #GP(0); FI;
+END;
+
 
 */
 }
 
 
 void me_op_jcc(Mirtille_VirtualMachine *me){
-//
+//Jcc — Jump if Condition Is Met
 /*
+Operation ¶
+
+IF condition
+    THEN
+        tempEIP := EIP + SignExtend(DEST);
+        IF OperandSize = 16
+            THEN tempEIP := tempEIP AND 0000FFFFH;
+        FI;
+    IF tempEIP is not within code segment limit
+        THEN #GP(0);
+        ELSE EIP := tempEIP
+    FI;
+FI;
 
 */
 }
@@ -5274,16 +6329,114 @@ void me_op_lodsw(Mirtille_VirtualMachine *me){
 
 
 void me_op_loop(Mirtille_VirtualMachine *me){
-//
+//LOOP/LOOPcc — Loop According to ECX Counter
 /*
+Operation ¶
+
+IF (AddressSize = 32)
+    THEN Count is ECX;
+ELSE IF (AddressSize = 64)
+    Count is RCX;
+ELSE Count is CX;
+FI;
+Count := Count – 1;
+IF Instruction is not LOOP
+    THEN
+        IF (Instruction := LOOPE) or (Instruction := LOOPZ)
+            THEN IF (ZF = 1) and (Count ≠ 0)
+                    THEN BranchCond := 1;
+                    ELSE BranchCond := 0;
+                FI;
+            ELSE (Instruction = LOOPNE) or (Instruction = LOOPNZ)
+                IF (ZF = 0 ) and (Count ≠ 0)
+                    THEN BranchCond := 1;
+                    ELSE BranchCond := 0;
+        FI;
+    ELSE (* Instruction = LOOP *)
+        IF (Count ≠ 0)
+            THEN BranchCond := 1;
+            ELSE BranchCond := 0;
+        FI;
+FI;
+IF BranchCond = 1
+    THEN
+        IF in 64-bit mode (* OperandSize = 64 *)
+            THEN
+                tempRIP := RIP + SignExtend(DEST);
+                IF tempRIP is not canonical
+                    THEN #GP(0);
+                ELSE RIP := tempRIP;
+                FI;
+            ELSE
+                tempEIP := EIP SignExtend(DEST);
+                IF OperandSize 16
+                    THEN tempEIP := tempEIP AND 0000FFFFH;
+                FI;
+                IF tempEIP is not within code segment limit
+                    THEN #GP(0);
+                    ELSE EIP := tempEIP;
+                FI;
+        FI;
+    ELSE
+        Terminate loop and continue program execution at (R/E)IP;
+FI;
 
 */
 }
 
 
 void me_op_loopcc(Mirtille_VirtualMachine *me){
-//
+//LOOP/LOOPcc — Loop According to ECX Counter
 /*
+Operation ¶
+
+IF (AddressSize = 32)
+    THEN Count is ECX;
+ELSE IF (AddressSize = 64)
+    Count is RCX;
+ELSE Count is CX;
+FI;
+Count := Count – 1;
+IF Instruction is not LOOP
+    THEN
+        IF (Instruction := LOOPE) or (Instruction := LOOPZ)
+            THEN IF (ZF = 1) and (Count ≠ 0)
+                    THEN BranchCond := 1;
+                    ELSE BranchCond := 0;
+                FI;
+            ELSE (Instruction = LOOPNE) or (Instruction = LOOPNZ)
+                IF (ZF = 0 ) and (Count ≠ 0)
+                    THEN BranchCond := 1;
+                    ELSE BranchCond := 0;
+        FI;
+    ELSE (* Instruction = LOOP *)
+        IF (Count ≠ 0)
+            THEN BranchCond := 1;
+            ELSE BranchCond := 0;
+        FI;
+FI;
+IF BranchCond = 1
+    THEN
+        IF in 64-bit mode (* OperandSize = 64 *)
+            THEN
+                tempRIP := RIP + SignExtend(DEST);
+                IF tempRIP is not canonical
+                    THEN #GP(0);
+                ELSE RIP := tempRIP;
+                FI;
+            ELSE
+                tempEIP := EIP SignExtend(DEST);
+                IF OperandSize 16
+                    THEN tempEIP := tempEIP AND 0000FFFFH;
+                FI;
+                IF tempEIP is not within code segment limit
+                    THEN #GP(0);
+                    ELSE EIP := tempEIP;
+                FI;
+        FI;
+    ELSE
+        Terminate loop and continue program execution at (R/E)IP;
+FI;
 
 */
 }
@@ -5417,7 +6570,7 @@ void me_op_monitor(Mirtille_VirtualMachine *me){
 }
 
 
-void me_op_mov_Move(Mirtille_VirtualMachine *me){
+void me_op_mov(Mirtille_VirtualMachine *me){
 //MOV — Move
 /*
 Operation ¶
@@ -5689,7 +6842,7 @@ void me_op_movq(Mirtille_VirtualMachine *me){
 }
 
 
-void me_op_movq(Mirtille_VirtualMachine *me){
+void me_op_movq1(Mirtille_VirtualMachine *me){
 //
 /*
 
@@ -5729,7 +6882,7 @@ void me_op_movsd(Mirtille_VirtualMachine *me){
 }
 
 
-void me_op_movsd(Mirtille_VirtualMachine *me){
+void me_op_movsd1(Mirtille_VirtualMachine *me){
 //
 /*
 
@@ -5873,8 +7026,40 @@ void me_op_mulsd(Mirtille_VirtualMachine *me){
 
 
 void me_op_mulss(Mirtille_VirtualMachine *me){
-//
+//MULSS — Multiply Scalar Single Precision Floating-Point Values
 /*
+Operation ¶
+VMULSS (EVEX Encoded Version) ¶
+
+IF (EVEX.b = 1) AND SRC2 *is a register*
+    THEN
+        SET_ROUNDING_MODE_FOR_THIS_INSTRUCTION(EVEX.RC);
+    ELSE
+        SET_ROUNDING_MODE_FOR_THIS_INSTRUCTION(MXCSR.RC);
+FI;
+IF k1[0] or *no writemask*
+    THEN DEST[31:0] := SRC1[31:0] * SRC2[31:0]
+    ELSE
+        IF *merging-masking* ; merging-masking
+            THEN *DEST[31:0] remains unchanged*
+            ELSE ; zeroing-masking
+                THEN DEST[31:0] := 0
+            FI
+    FI;
+ENDFOR
+DEST[127:32] := SRC1[127:32]
+DEST[MAXVL-1:128] := 0
+
+VMULSS (VEX.128 Encoded Version) ¶
+
+DEST[31:0] := SRC1[31:0] * SRC2[31:0]
+DEST[127:32] := SRC1[127:32]
+DEST[MAXVL-1:128] := 0
+
+MULSS (128-bit Legacy SSE Version) ¶
+
+DEST[31:0] := DEST[31:0] * SRC[31:0]
+DEST[MAXVL-1:32] (Unmodified)
 
 */
 }
@@ -5992,8 +7177,21 @@ void me_op_orps(Mirtille_VirtualMachine *me){
 
 
 void me_op_out(Mirtille_VirtualMachine *me){
-//
+//OUT — Output to Port
 /*
+Operation ¶
+
+IF ((PE = 1) and ((CPL > IOPL) or (VM = 1)))
+    THEN (* Protected mode with CPL > IOPL or virtual-8086 mode *)
+        IF (Any I/O Permission Bit for I/O port being accessed = 1)
+            THEN (* I/O operation is not allowed *)
+                #GP(0);
+            ELSE ( * I/O operation is allowed *)
+                DEST := SRC; (* Writes to selected I/O port *)
+        FI;
+    ELSE (Real Mode or Protected Mode with CPL ≤ IOPL *)
+        DEST := SRC; (* Writes to selected I/O port *)
+FI;
 
 */
 }
@@ -7282,16 +8480,159 @@ void me_op_pushfq(Mirtille_VirtualMachine *me){
 
 
 void me_op_pxor(Mirtille_VirtualMachine *me){
-//
+//PXOR — Logical Exclusive OR
 /*
+Operation ¶
+PXOR (64-bit Operand) ¶
+
+DEST := DEST XOR SRC
+
+PXOR (128-bit Legacy SSE Version) ¶
+
+DEST := DEST XOR SRC
+DEST[MAXVL-1:128] (Unmodified)
+
+VPXOR (VEX.128 Encoded Version) ¶
+
+DEST := SRC1 XOR SRC2
+DEST[MAXVL-1:128] := 0
+
+VPXOR (VEX.256 Encoded Version) ¶
+
+DEST := SRC1 XOR SRC2
+DEST[MAXVL-1:256] := 0
+
+VPXORD (EVEX Encoded Versions) ¶
+
+(KL, VL) = (4, 128), (8, 256), (16, 512)
+FOR j := 0 TO KL-1
+    i := j * 32
+    IF k1[j] OR *no writemask* THEN
+            IF (EVEX.b = 1) AND (SRC2 *is memory*)
+                THEN DEST[i+31:i] := SRC1[i+31:i] BITWISE XOR SRC2[31:0]
+                ELSE DEST[i+31:i] := SRC1[i+31:i] BITWISE XOR SRC2[i+31:i]
+            FI;
+    ELSE
+        IF *merging-masking* ; merging-masking
+            THEN *DEST[31:0] remains unchanged*
+            ELSE
+                    ; zeroing-masking
+                DEST[31:0] := 0
+        FI;
+    FI;
+ENDFOR;
+DEST[MAXVL-1:VL] := 0
+
+VPXORQ (EVEX Encoded Versions) ¶
+
+(KL, VL) = (2, 128), (4, 256), (8, 512)
+FOR j := 0 TO KL-1
+    i := j * 64
+    IF k1[j] OR *no writemask* THEN
+            IF (EVEX.b = 1) AND (SRC2 *is memory*)
+                THEN DEST[i+63:i] := SRC1[i+63:i] BITWISE XOR SRC2[63:0]
+                ELSE DEST[i+63:i] := SRC1[i+63:i] BITWISE XOR SRC2[i+63:i]
+            FI;
+    ELSE
+        IF *merging-masking* ; merging-masking
+            THEN *DEST[63:0] remains unchanged*
+            ELSE ; zeroing-masking
+                DEST[63:0] := 0
+        FI;
+    FI;
+ENDFOR;
+DEST[MAXVL-1:VL] := 0
 
 */
 }
 
 
 void me_op_rcl(Mirtille_VirtualMachine *me){
-//
+//RCL/RCR/ROL/ROR — Rotate
 /*
+Operation ¶
+(* RCL and RCR Instructions *) ¶
+
+SIZE := OperandSize;
+CASE (determine count) OF
+    SIZE := 8:
+        tempCOUNT := (COUNT AND 1FH) MOD 9;
+    SIZE := 16:
+        tempCOUNT := (COUNT AND 1FH) MOD 17;
+    SIZE := 32:
+        tempCOUNT := COUNT AND 1FH;
+    SIZE := 64:
+        tempCOUNT := COUNT AND 3FH;
+ESAC;
+IF OperandSize = 64
+    THEN COUNTMASK = 3FH;
+    ELSE COUNTMASK = 1FH;
+FI;
+
+(* RCL Instruction Operation *) ¶
+
+WHILE (tempCOUNT ≠ 0)
+    DO
+        tempCF := MSB(DEST);
+        DEST := (DEST ∗ 2) + CF;
+        CF := tempCF;
+        tempCOUNT := tempCOUNT – 1;
+    OD;
+ELIHW;
+IF (COUNT & COUNTMASK) = 1
+    THEN OF := MSB(DEST) XOR CF;
+    ELSE OF is undefined;
+FI;
+
+(* RCR Instruction Operation *) ¶
+
+IF (COUNT & COUNTMASK) = 1
+    THEN OF := MSB(DEST) XOR CF;
+    ELSE OF is undefined;
+FI;
+WHILE (tempCOUNT ≠ 0)
+    DO
+        tempCF := LSB(SRC);
+        DEST := (DEST / 2) + (CF * 2SIZE);
+        CF := tempCF;
+        tempCOUNT := tempCOUNT – 1;
+    OD;
+
+(* ROL Instruction Operation *) ¶
+
+tempCOUNT := (COUNT & COUNTMASK) MOD SIZE
+WHILE (tempCOUNT ≠ 0)
+    DO
+        tempCF := MSB(DEST);
+        DEST := (DEST ∗ 2) + tempCF;
+        tempCOUNT := tempCOUNT – 1;
+    OD;
+ELIHW;
+IF (COUNT & COUNTMASK) ≠ 0
+    THEN CF := LSB(DEST);
+FI;
+IF (COUNT & COUNTMASK) = 1
+    THEN OF := MSB(DEST) XOR CF;
+    ELSE OF is undefined;
+FI;
+
+(* ROR Instruction Operation *) ¶
+
+tempCOUNT := (COUNT & COUNTMASK) MOD SIZE
+WHILE (tempCOUNT ≠ 0)
+    DO
+        tempCF := LSB(SRC);
+        DEST := (DEST / 2) + (tempCF ∗ 2SIZE);
+        tempCOUNT := tempCOUNT – 1;
+    OD;
+ELIHW;
+IF (COUNT & COUNTMASK) ≠ 0
+    THEN CF := MSB(DEST);
+FI;
+IF (COUNT & COUNTMASK) = 1
+    THEN OF := MSB(DEST) XOR MSB − 1(DEST);
+    ELSE OF is undefined;
+FI;
 
 */
 }
@@ -10228,7 +11569,7 @@ void me_op_vgatherdpd(Mirtille_VirtualMachine *me){
 }
 
 
-void me_op_vgatherdpd(Mirtille_VirtualMachine *me){
+void me_op_vgatherdpd1(Mirtille_VirtualMachine *me){
 //
 /*
 
@@ -10244,7 +11585,7 @@ void me_op_vgatherdps(Mirtille_VirtualMachine *me){
 }
 
 
-void me_op_vgatherdps(Mirtille_VirtualMachine *me){
+void me_op_vgatherdps1(Mirtille_VirtualMachine *me){
 //
 /*
 
@@ -10260,7 +11601,7 @@ void me_op_vgatherqpd(Mirtille_VirtualMachine *me){
 }
 
 
-void me_op_vgatherqpd(Mirtille_VirtualMachine *me){
+void me_op_vgatherqpd1(Mirtille_VirtualMachine *me){
 //
 /*
 
@@ -10276,7 +11617,7 @@ void me_op_vgatherqps(Mirtille_VirtualMachine *me){
 }
 
 
-void me_op_vgatherqps(Mirtille_VirtualMachine *me){
+void me_op_vgatherqps1(Mirtille_VirtualMachine *me){
 //
 /*
 
@@ -11036,7 +12377,7 @@ void me_op_vpgatherdd(Mirtille_VirtualMachine *me){
 }
 
 
-void me_op_vpgatherdd(Mirtille_VirtualMachine *me){
+void me_op_vpgatherdd1(Mirtille_VirtualMachine *me){
 //
 /*
 
@@ -11052,7 +12393,7 @@ void me_op_vpgatherdq(Mirtille_VirtualMachine *me){
 }
 
 
-void me_op_vpgatherdq(Mirtille_VirtualMachine *me){
+void me_op_vpgatherdq1(Mirtille_VirtualMachine *me){
 //
 /*
 
@@ -11068,7 +12409,7 @@ void me_op_vpgatherqd(Mirtille_VirtualMachine *me){
 }
 
 
-void me_op_vpgatherqd(Mirtille_VirtualMachine *me){
+void me_op_vpgatherqd1(Mirtille_VirtualMachine *me){
 //
 /*
 
@@ -11084,7 +12425,7 @@ void me_op_vpgatherqq(Mirtille_VirtualMachine *me){
 }
 
 
-void me_op_vpgatherqq(Mirtille_VirtualMachine *me){
+void me_op_vpgatherqq1(Mirtille_VirtualMachine *me){
 //
 /*
 
@@ -12213,8 +13554,11 @@ void me_op_xlatb(Mirtille_VirtualMachine *me){
 
 
 void me_op_xor(Mirtille_VirtualMachine *me){
-//
+//XOR — Logical Exclusive OR
 /*
+Operation ¶
+
+DEST := DEST XOR SRC;
 
 */
 }
@@ -12317,8 +13661,16 @@ void me_op_xsusldtrk(Mirtille_VirtualMachine *me){
 
 
 void me_op_xtest(Mirtille_VirtualMachine *me){
-//
+//XTEST — Test if in Transactional Execution
 /*
+XTEST ¶
+
+IF (RTM_ACTIVE = 1 OR HLE_ACTIVE = 1)
+    THEN
+        ZF := 0
+    ELSE
+        ZF := 1
+FI;
 
 */
 }
@@ -12699,8 +14051,42 @@ void me_op_vmx(Mirtille_VirtualMachine *me){
 
 
 void me_op_invept(Mirtille_VirtualMachine *me){
-//
+//INVEPT — Invalidate Translations Derived from EPT
 /*
+Operation ¶
+
+IF (not in VMX operation) or (CR0.PE = 0) or (RFLAGS.VM = 1) or (IA32_EFER.LMA = 1 and CS.L = 0)
+    THEN #UD;
+ELSIF in VMX non-root operation
+    THEN VM exit;
+ELSIF CPL > 0
+    THEN #GP(0);
+    ELSE
+        INVEPT_TYPE := value of register operand;
+        IF IA32_VMX_EPT_VPID_CAP MSR indicates that processor does not support INVEPT_TYPE
+            THEN VMfail(Invalid operand to INVEPT/INVVPID);
+            ELSE // INVEPT_TYPE must be 1 or 2
+                INVEPT_DESC := value of memory operand;
+                EPTP := INVEPT_DESC[63:0];
+                CASE INVEPT_TYPE OF
+                    1:
+                                    // single-context invalidation
+                        IF VM entry with the “enable EPT“ VM execution control set to 1
+                        would fail due to the EPTP value
+                            THEN VMfail(Invalid operand to INVEPT/INVVPID);
+                            ELSE
+                                Invalidate mappings associated with EPTP[51:12];
+                                VMsucceed;
+                        FI;
+                        BREAK;
+                    2:
+                                    // global invalidation
+                        Invalidate mappings associated with all EPTPs;
+                        VMsucceed;
+                        BREAK;
+                ESAC;
+        FI;
+FI;
 
 */
 }
@@ -12778,7 +14164,7 @@ void me_op_vmresume(Mirtille_VirtualMachine *me){
 }
 
 
-void me_op_vmresume(Mirtille_VirtualMachine *me){
+void me_op_vmresume1(Mirtille_VirtualMachine *me){
 //
 /*
 
@@ -13052,24 +14438,177 @@ void me_op_vscatterpf1dpd(Mirtille_VirtualMachine *me){
 
 
 void me_op_vscatterpf1dps(Mirtille_VirtualMachine *me){
-//
+//VSCATTERPF1DPS/VSCATTERPF1QPS/VSCATTERPF1DPD/VSCATTERPF1QPD — Sparse PrefetchPacked SP/DP Data Values With Signed Dword, Signed Qword Indices Using T1 Hint With Intentto Write
 /*
+Operation ¶
+
+BASE_ADDR stands for the memory operand base address (a GPR); may not exist.
+VINDEX stands for the memory operand vector of indices (a vector register).
+SCALE stands for the memory operand scalar (1, 2, 4 or 8).
+DISP is the optional 1, 2 or 4 byte displacement.
+PREFETCH(mem, Level, State) Prefetches a byte memory location pointed by ‘mem’ into the cache level specified by ‘Level’; a request
+for exclusive/ownership is done if ‘State’ is 1. Note that the memory location ignore cache line splits. This operation is considered a
+hint for the processor and may be skipped depending on implementation.
+
+VSCATTERPF1DPS (EVEX Encoded Version) ¶
+
+(KL, VL) = (16, 512)
+FOR j := 0 TO KL-1
+    i := j * 32
+    IF k1[j]
+        Prefetch( [BASE_ADDR + SignExtend(VINDEX[i+31:i]) * SCALE + DISP], Level=1, RFO = 1)
+    FI;
+ENDFOR
+
+VSCATTERPF1DPD (EVEX Encoded Version) ¶
+
+(KL, VL) = (8, 512)
+FOR j := 0 TO KL-1
+    i := j * 64
+    k := j * 32
+    IF k1[j]
+        Prefetch( [BASE_ADDR + SignExtend(VINDEX[k+31:k]) * SCALE + DISP], Level=1, RFO = 1)
+    FI;
+ENDFOR
+
+VSCATTERPF1QPS (EVEX Encoded Version) ¶
+
+(KL, VL) = (8, 512)
+FOR j := 0 TO KL-1
+    i := j * 64
+    IF k1[j]
+        Prefetch( [BASE_ADDR + SignExtend(VINDEX[i+63:i]) * SCALE + DISP], Level=1, RFO = 1)
+    FI;
+ENDFOR
+
+VSCATTERPF1QPD (EVEX Encoded Version) ¶
+
+(KL, VL) = (8, 512)
+FOR j := 0 TO KL-1
+    i := j * 64
+    k := j * 64
+    IF k1[j]
+        Prefetch( [BASE_ADDR + SignExtend(VINDEX[k+63:k]) * SCALE + DISP], Level=1, RFO = 1)
+    FI;
+ENDFOR
 
 */
 }
 
 
 void me_op_vscatterpf1qpd(Mirtille_VirtualMachine *me){
-//
+//VSCATTERPF1DPS/VSCATTERPF1QPS/VSCATTERPF1DPD/VSCATTERPF1QPD — Sparse PrefetchPacked SP/DP Data Values With Signed Dword, Signed Qword Indices Using T1 Hint With Intentto Write
 /*
+Operation ¶
+
+BASE_ADDR stands for the memory operand base address (a GPR); may not exist.
+VINDEX stands for the memory operand vector of indices (a vector register).
+SCALE stands for the memory operand scalar (1, 2, 4 or 8).
+DISP is the optional 1, 2 or 4 byte displacement.
+PREFETCH(mem, Level, State) Prefetches a byte memory location pointed by ‘mem’ into the cache level specified by ‘Level’; a request
+for exclusive/ownership is done if ‘State’ is 1. Note that the memory location ignore cache line splits. This operation is considered a
+hint for the processor and may be skipped depending on implementation.
+
+VSCATTERPF1DPS (EVEX Encoded Version) ¶
+
+(KL, VL) = (16, 512)
+FOR j := 0 TO KL-1
+    i := j * 32
+    IF k1[j]
+        Prefetch( [BASE_ADDR + SignExtend(VINDEX[i+31:i]) * SCALE + DISP], Level=1, RFO = 1)
+    FI;
+ENDFOR
+
+VSCATTERPF1DPD (EVEX Encoded Version) ¶
+
+(KL, VL) = (8, 512)
+FOR j := 0 TO KL-1
+    i := j * 64
+    k := j * 32
+    IF k1[j]
+        Prefetch( [BASE_ADDR + SignExtend(VINDEX[k+31:k]) * SCALE + DISP], Level=1, RFO = 1)
+    FI;
+ENDFOR
+
+VSCATTERPF1QPS (EVEX Encoded Version) ¶
+
+(KL, VL) = (8, 512)
+FOR j := 0 TO KL-1
+    i := j * 64
+    IF k1[j]
+        Prefetch( [BASE_ADDR + SignExtend(VINDEX[i+63:i]) * SCALE + DISP], Level=1, RFO = 1)
+    FI;
+ENDFOR
+
+VSCATTERPF1QPD (EVEX Encoded Version) ¶
+
+(KL, VL) = (8, 512)
+FOR j := 0 TO KL-1
+    i := j * 64
+    k := j * 64
+    IF k1[j]
+        Prefetch( [BASE_ADDR + SignExtend(VINDEX[k+63:k]) * SCALE + DISP], Level=1, RFO = 1)
+    FI;
+ENDFOR
 
 */
 }
 
 
 void me_op_vscatterpf1qps(Mirtille_VirtualMachine *me){
-//
+//VSCATTERPF1DPS/VSCATTERPF1QPS/VSCATTERPF1DPD/VSCATTERPF1QPD — Sparse PrefetchPacked SP/DP Data Values With Signed Dword, Signed Qword Indices Using T1 Hint With Intentto Write
 /*
+Operation ¶
+
+BASE_ADDR stands for the memory operand base address (a GPR); may not exist.
+VINDEX stands for the memory operand vector of indices (a vector register).
+SCALE stands for the memory operand scalar (1, 2, 4 or 8).
+DISP is the optional 1, 2 or 4 byte displacement.
+PREFETCH(mem, Level, State) Prefetches a byte memory location pointed by ‘mem’ into the cache level specified by ‘Level’; a request
+for exclusive/ownership is done if ‘State’ is 1. Note that the memory location ignore cache line splits. This operation is considered a
+hint for the processor and may be skipped depending on implementation.
+
+VSCATTERPF1DPS (EVEX Encoded Version) ¶
+
+(KL, VL) = (16, 512)
+FOR j := 0 TO KL-1
+    i := j * 32
+    IF k1[j]
+        Prefetch( [BASE_ADDR + SignExtend(VINDEX[i+31:i]) * SCALE + DISP], Level=1, RFO = 1)
+    FI;
+ENDFOR
+
+VSCATTERPF1DPD (EVEX Encoded Version) ¶
+
+(KL, VL) = (8, 512)
+FOR j := 0 TO KL-1
+    i := j * 64
+    k := j * 32
+    IF k1[j]
+        Prefetch( [BASE_ADDR + SignExtend(VINDEX[k+31:k]) * SCALE + DISP], Level=1, RFO = 1)
+    FI;
+ENDFOR
+
+VSCATTERPF1QPS (EVEX Encoded Version) ¶
+
+(KL, VL) = (8, 512)
+FOR j := 0 TO KL-1
+    i := j * 64
+    IF k1[j]
+        Prefetch( [BASE_ADDR + SignExtend(VINDEX[i+63:i]) * SCALE + DISP], Level=1, RFO = 1)
+    FI;
+ENDFOR
+
+VSCATTERPF1QPD (EVEX Encoded Version) ¶
+
+(KL, VL) = (8, 512)
+FOR j := 0 TO KL-1
+    i := j * 64
+    k := j * 64
+    IF k1[j]
+        Prefetch( [BASE_ADDR + SignExtend(VINDEX[k+63:k]) * SCALE + DISP], Level=1, RFO = 1)
+    FI;
+ENDFOR
 
 */
 }

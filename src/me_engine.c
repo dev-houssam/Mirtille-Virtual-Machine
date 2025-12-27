@@ -1,6 +1,9 @@
 #include "../include/me_engine.h"
+#include "../include/me_opcode.h"
+#include "../include/me_register.h"
 #include "../include/me_system.h"
 #include <pthread.h>
+#include <signal.h>
 
 char * createTabChar(int size){
 	char * str = (char *) malloc(sizeof(char)  * size);
@@ -37,12 +40,13 @@ void me_configuration_init_engine(Mirtille_Engine * me){
 
 	//Video
 	me->video = me_create_video();
-	pthread_t screen_task;
-	pthread_create(&screen_task, NULL, Screen, (void *) me->video);
-	pthread_detach(screen_task);
+	//pthread_t screen_task;
+	pthread_create(&me->sys->video_pid, NULL, Screen, (void *) me->video);
+	//pthread_join(screen_task, NULL);
+	pthread_detach(me->sys->video_pid);
+	printf("VIDEO PID=%ld\n", me->sys->video_pid);
 	//me_configuration_init_video(me->video);
 	printf("me->video = me_create_video();\n");
-
 }
 
 // pc+0|00000000.00000000.00000000.00000000|
@@ -90,14 +94,26 @@ void printX64Instruction(uint64_t instruction){
 
 
 void me_run(Mirtille_Engine * me) {
-	printf("RUN\n");
+	printf("RUN \n");
 	me->vm->instructions.instr = (uint64_t * ) malloc(sizeof(uint64_t) * 100);
 	for(int i = 0; i < 100; i++){
 		me->vm->instructions.instr[i] = 0xFFFFFA & i; 
 	}
-	me->vm->instructions.pc = 0;
-	while (me->vm->instructions.pc < 10000) {
-		uint64_t instruction = fetch64bitsInstruction(&me->vm->instructions);
+	me->vm->instructions.pc = 1;
+	float posx = 0.0;
+	//assert(me->vm->me_video->callback != NULL && "Video = NULL : error");
+	//printf("Same:?:video:callback=%p\n", me->vm->me_video->callback);
+	
+	/*if(me->vm->me_video->callback != NULL){
+		printf("me->vm->me_video->callback == NULL\n");
+		exit(EXIT_FAILURE);
+	}*/
+	printf("ça passe !\n");
+	//printf("Same:?:video:callback=%p\n", me->vm->me_video->callback);
+	while (me->vm->instructions.pc) {
+		//me->vm->me_video->callback(&posx);
+		//system("sleep 1");
+		/*uint64_t instruction = fetch64bitsInstruction(&me->vm->instructions);
         uint8_t op 			 = fetch8bitsInstructionOp(instruction);
         uint8_t dst 		 = fetch8bitsInstructionDst(instruction);
         uint16_t src 		 = fetch16bitsInstructionSrc(instruction);
@@ -108,7 +124,6 @@ void me_run(Mirtille_Engine * me) {
 				me_op_call(me->vm);
 				me_op_ret(me->vm);
 				me_op_jmp(me->vm);
-				me_op_jnz(me->vm);
 				me_op_selectVideoPage(me->vm);
 				me_op_fillVideoPage(me->vm);
 				me_op_copyVideoPage(me->vm);
@@ -121,16 +136,18 @@ void me_run(Mirtille_Engine * me) {
 				me_op_updateMemList(me->vm);
 				me_inp_handleSpecialKeys(me->vm);
 				me_hostFrame(me->vm);
+				//me->vm->instructions.pc++;
         		break;
 
-        }
+        }*/
 		//me_processInput(me);
 		//me_hostFrame(me->vm);
 		//Fetch Instruction
 		//VM :: Instruction instructions;
 		//uint8_t byteOp = fetchByteFromInstructionsSet(&me->vm->instructions);
-		printX64Instruction(instruction);
+		//printX64Instruction(instruction);
 	}
+	printf("UNRUN\n");
 }
 
 // void me_destroy_System(ME_System * me_system);
